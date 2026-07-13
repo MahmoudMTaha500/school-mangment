@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: School Management SaaS API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Central platform API
+  - url: http://{school}.localhost:8080/api/v1
+    description: Tenant school API
+    variables:
+      school: { default: green-valley }
+paths:
+  /platform/login:
+    post:
+      summary: Authenticate a Platform Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses: { '200': { description: Token issued } }
+  /schools:
+    post:
+      summary: Provision a school tenant
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Tenant database provisioned }, '403': { description: Platform Admin required } }
+  /auth/login:
+    post:
+      summary: Authenticate a tenant user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses: { '200': { description: Token issued } }
+  /attendance:
+    post:
+      summary: Record attendance for a class
+      security: [{ bearerAuth: [] }]
+      responses: { '204': { description: Attendance recorded } }
+  /homework:
+    post:
+      summary: Create homework
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Homework created } }
+  /wallet/credit:
+    post:
+      summary: Credit a wallet with an idempotency key
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Ledger transaction recorded } }
+  /wallet/debit:
+    post:
+      summary: Debit a wallet with an idempotency key
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Ledger transaction recorded }, '422': { description: Insufficient balance } }
+  /notifications:
+    get:
+      summary: List the current tenant user's in-app notifications
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Notification page } }
+  /reports/attendance:
+    get:
+      summary: Attendance summary for a class and date range
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { description: Summary } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: Sanctum }
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
