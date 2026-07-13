@@ -1,66 +1,24 @@
 {
   "info": {
     "name": "School Management SaaS API",
-    "description": "Local Docker collection. Select the School Management - Local Docker environment before running requests.",
+    "description": "Local Docker collection. Select the School Management - Local Docker environment. Tenant requests automatically send the configured Host header.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "json", "value": "application/json" }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "exec": [
-          "if (pm.request.url.toString().startsWith(pm.environment.get('tenant_base_url'))) {",
-          "  pm.request.headers.upsert({ key: 'Host', value: pm.environment.get('tenant_host') });",
-          "}"
-        ]
-      }
-    }
-  ],
+  "variable": [{ "key": "json", "value": "application/json" }],
+  "event": [{ "listen": "prerequest", "script": { "exec": ["if (pm.request.url.toString().startsWith(pm.environment.get('tenant_base_url'))) {", "  pm.request.headers.upsert({ key: 'Host', value: pm.environment.get('tenant_host') });", "}"] } }],
   "item": [
     {
       "name": "Central Platform",
       "item": [
-        {
-          "name": "Health",
-          "request": { "method": "GET", "url": "{{central_base_url}}/health" }
-        },
-        {
-          "name": "Platform Login",
-          "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "pm.environment.set('platform_token', json.token);"] }}],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "{{json}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{platform_email}}\",\n  \"password\": \"{{platform_password}}\"\n}" },
-            "url": "{{central_base_url}}/platform/login"
-          }
-        },
-        {
-          "name": "Create School Tenant",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "{{json}}" }, { "key": "Authorization", "value": "Bearer {{platform_token}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Green Valley School\",\n  \"slug\": \"green-valley\",\n  \"domain\": \"green-valley.localhost\",\n  \"admin_name\": \"School Admin\",\n  \"admin_email\": \"school-admin@greenvalley.test\",\n  \"admin_password\": \"change-this-secure-password\"\n}" },
-            "url": "{{central_base_url}}/schools"
-          }
-        }
+        { "name": "Health", "request": { "method": "GET", "url": "{{central_base_url}}/health" } },
+        { "name": "Platform Login", "event": [{ "listen": "test", "script": { "exec": ["pm.environment.set('platform_token', pm.response.json().token);"] }}], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{platform_email}}\",\n  \"password\": \"{{platform_password}}\"\n}" }, "url": "{{central_base_url}}/platform/login" } },
+        { "name": "Create School Tenant", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "{{json}}" }, { "key": "Authorization", "value": "Bearer {{platform_token}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Green Valley School\",\n  \"slug\": \"green-valley\",\n  \"domain\": \"green-valley.localhost\",\n  \"admin_name\": \"School Admin\",\n  \"admin_email\": \"school-admin@greenvalley.test\",\n  \"admin_password\": \"change-this-secure-password\"\n}" }, "url": "{{central_base_url}}/schools" } }
       ]
     },
     {
       "name": "Tenant Authentication",
       "item": [
-        {
-          "name": "Tenant Login",
-          "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "pm.environment.set('tenant_token', json.token);"] }}],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "{{json}}" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{tenant_email}}\",\n  \"password\": \"{{tenant_password}}\",\n  \"device_name\": \"Postman\"\n}" },
-            "url": "{{tenant_base_url}}/auth/login"
-          }
-        },
+        { "name": "Tenant Login", "event": [{ "listen": "test", "script": { "exec": ["pm.environment.set('tenant_token', pm.response.json().token);"] }}], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{tenant_email}}\",\n  \"password\": \"{{tenant_password}}\",\n  \"device_name\": \"Postman\"\n}" }, "url": "{{tenant_base_url}}/auth/login" } },
         { "name": "My Profile", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/me" } },
         { "name": "Tenant Details", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/tenant" } }
       ]
@@ -75,14 +33,40 @@
       ]
     },
     {
-      "name": "Learning and Wallet",
+      "name": "Attendance Workflows",
       "item": [
         { "name": "Student Attendance", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/attendance?student_id={{student_id}}" } },
-        { "name": "Student Homework", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/homework?student_id={{student_id}}" } },
-        { "name": "My Wallet", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/me" } },
-        { "name": "Notifications", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/notifications" } },
-        { "name": "Wallet Report", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/reports/wallet?from=2026-01-01&to=2026-12-31" } }
+        { "name": "Correct Attendance", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"excused\",\n  \"reason\": \"Approved medical absence\"\n}" }, "url": "{{tenant_base_url}}/attendance/{{attendance_id}}/correct" } },
+        { "name": "Submit Absence Justification", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Medical appointment\"\n}" }, "url": "{{tenant_base_url}}/attendance/{{attendance_id}}/justifications" } },
+        { "name": "Review Absence Justification", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"status\": \"approved\",\n  \"reviewer_note\": \"Accepted\"\n}" }, "url": "{{tenant_base_url}}/attendance-justifications/{{justification_id}}" } },
+        { "name": "Attendance CSV Export", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/reports/attendance.csv?class_section_id={{class_section_id}}&from=2026-01-01&to=2026-12-31" } }
       ]
-    }
+    },
+    {
+      "name": "Homework Workflows",
+      "item": [
+        { "name": "Student Homework", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/homework?student_id={{student_id}}" } },
+        { "name": "Update Homework", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated assignment title\"\n}" }, "url": "{{tenant_base_url}}/homework/{{homework_id}}" } },
+        { "name": "Set Homework Rubric", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"criteria\": [\n    { \"title\": \"Correctness\", \"max_score\": 70 },\n    { \"title\": \"Presentation\", \"max_score\": 30 }\n  ]\n}" }, "url": "{{tenant_base_url}}/homework/{{homework_id}}/rubric" } },
+        { "name": "Grade Submission with Rubric", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"grade\": 85,\n  \"feedback\": \"Good work\",\n  \"rubric_scores\": [\n    { \"criterion_id\": 1, \"score\": 60 },\n    { \"criterion_id\": 2, \"score\": 25 }\n  ]\n}" }, "url": "{{tenant_base_url}}/homework/{{homework_id}}/submissions/{{submission_id}}/grade" } },
+        { "name": "List Submission Attachments", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/submissions/{{submission_id}}/attachments" } },
+        { "name": "Delete Submission Attachment", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/attachments/{{attachment_id}}" } },
+        { "name": "Archive Homework", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/homework/{{homework_id}}" } }
+      ]
+    },
+    {
+      "name": "Wallet Workflows",
+      "item": [
+        { "name": "My Wallet", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/me" } },
+        { "name": "Wallet Transaction CSV", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/me/transactions.csv" } },
+        { "name": "Create Top-up", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"wallet_account_id\": {{wallet_account_id}},\n  \"amount\": 2500,\n  \"idempotency_key\": \"postman-topup-001\"\n}" }, "url": "{{tenant_base_url}}/wallet/topups" } },
+        { "name": "Confirm Top-up", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/topups/{{payment_intent_id}}/confirm" } },
+        { "name": "Cancel Top-up", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/topups/{{payment_intent_id}}/cancel" } },
+        { "name": "Fail Top-up (Admin)", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Gateway declined payment\"\n}" }, "url": "{{tenant_base_url}}/wallet/topups/{{payment_intent_id}}/fail" } },
+        { "name": "Refund Top-up (Admin)", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/wallet/topups/{{payment_intent_id}}/refund" } },
+        { "name": "Reconcile Top-ups (Admin)", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"older_than_minutes\": 30,\n  \"limit\": 100\n}" }, "url": "{{tenant_base_url}}/wallet/topups/reconcile" } }
+      ]
+    },
+    { "name": "Notifications", "item": [{ "name": "List Notifications", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/notifications" } }] }
   ]
 }

@@ -6,6 +6,7 @@ Laravel 12 school-management backend, built as a database-per-school SaaS. Docke
 
 - [Architecture guide](docs/ARCHITECTURE.md)
 - [Completion plan](docs/COMPLETION_PLAN.md)
+- [Delivery status](docs/DELIVERY_STATUS.md)
 - [Production operations](docs/OPERATIONS.md)
 - [Postman collection](postman/README.md)
 
