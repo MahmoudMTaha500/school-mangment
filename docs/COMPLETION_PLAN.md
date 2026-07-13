@@ -41,6 +41,11 @@ This plan completes the current tenant-isolated backend without weakening the da
 - Core workflows are recoverable, auditable, and idempotent.
 - Concurrent wallet and duplicate-webhook tests pass.
 
+### Current implementation status
+
+- Completed: attendance corrections, absence justifications, parent absence alerts, attendance exports, homework lifecycle/attachments/rubrics, wallet cancellation/failure/refund flows, transaction export, and scheduled per-tenant reconciliation.
+- Verified: duplicate payment reconciliation cannot create a second ledger credit; wallet writes use row locks plus idempotency keys. True multi-process MySQL load testing remains part of Phase 6 operations validation.
+
 ## Phase 3 — Real integrations
 
 ### Scope

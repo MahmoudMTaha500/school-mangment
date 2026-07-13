@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Modules\Attachments\Interfaces\Http\Controllers\AttachmentController;
 use App\Modules\Attendance\Interfaces\Http\Controllers\AttendanceController;
+use App\Modules\Attendance\Interfaces\Http\Controllers\AttendanceJustificationController;
 use App\Modules\Attendance\Interfaces\Http\Controllers\AttendanceReadController;
 use App\Modules\Homework\Interfaces\Http\Controllers\HomeworkController;
 use App\Modules\Homework\Interfaces\Http\Controllers\HomeworkReadController;
@@ -75,13 +76,20 @@ Route::prefix('api/v1')->middleware([
         });
         Route::middleware('can:attendance.record')->post('/attendance', [AttendanceController::class, 'store']);
         Route::middleware('can:attendance.record')->patch('/attendance/{attendance}/correct', [AttendanceController::class, 'correct']);
+        Route::middleware('can:attendance.record')->patch('/attendance-justifications/{justification}', [AttendanceJustificationController::class, 'review']);
         Route::middleware('can:attendance.view')->get('/attendance', [AttendanceReadController::class, 'index']);
+        Route::middleware('can:attendance.view')->post('/attendance/{attendance}/justifications', [AttendanceJustificationController::class, 'store']);
         Route::middleware('can:attendance.view')->get('/me/attendance-summary', [MobileStudentController::class, 'attendanceSummary']);
         Route::middleware('can:homework.create')->post('/homework', [HomeworkController::class, 'store']);
+        Route::middleware('can:homework.create')->patch('/homework/{homework}', [HomeworkController::class, 'update']);
+        Route::middleware('can:homework.create')->delete('/homework/{homework}', [HomeworkController::class, 'archive']);
+        Route::middleware('can:homework.create')->put('/homework/{homework}/rubric', [HomeworkController::class, 'replaceRubric']);
         Route::middleware('can:homework.view')->get('/homework', [HomeworkReadController::class, 'index']);
         Route::middleware('can:homework.view')->get('/me/homework', [MobileStudentController::class, 'homework']);
         Route::middleware('can:homework.submit')->post('/homework/{homework}/submissions', [HomeworkController::class, 'submit']);
         Route::middleware('can:homework.submit')->post('/submissions/{submission}/attachments', [AttachmentController::class, 'storeSubmission']);
+        Route::middleware('can:homework.view')->get('/submissions/{submission}/attachments', [AttachmentController::class, 'index']);
+        Route::middleware('can:homework.submit')->delete('/attachments/{attachment}', [AttachmentController::class, 'destroy']);
         Route::get('/attachments/{attachment}', [AttachmentController::class, 'download']);
         Route::middleware('can:homework.grade')->post('/homework/{homework}/submissions/{submission}/grade', [HomeworkController::class, 'grade']);
         Route::middleware('can:wallet.manage')->group(function (): void {
@@ -90,10 +98,15 @@ Route::prefix('api/v1')->middleware([
             Route::post('/wallet/debit', [WalletController::class, 'debit']);
         });
         Route::middleware('can:wallet.view')->get('/wallet/me', [WalletReadController::class, 'mine']);
+        Route::middleware('can:wallet.view')->get('/wallet/me/transactions.csv', [WalletReadController::class, 'transactionsCsv']);
         Route::middleware('can:wallet.topup')->group(function (): void {
             Route::post('/wallet/topups', [TopupController::class, 'create']);
             Route::post('/wallet/topups/{paymentIntent}/confirm', [TopupController::class, 'confirm']);
+            Route::post('/wallet/topups/{paymentIntent}/cancel', [TopupController::class, 'cancel']);
         });
+        Route::middleware('can:wallet.manage')->post('/wallet/topups/{paymentIntent}/refund', [TopupController::class, 'refund']);
+        Route::middleware('can:wallet.manage')->post('/wallet/topups/{paymentIntent}/fail', [TopupController::class, 'fail']);
+        Route::middleware('can:wallet.manage')->post('/wallet/topups/reconcile', [TopupController::class, 'reconcile']);
         Route::middleware('can:reports.view')->group(function (): void {
             Route::get('/reports/attendance', [ReportController::class, 'attendance']);
             Route::get('/reports/attendance.csv', [ReportController::class, 'attendanceCsv']);

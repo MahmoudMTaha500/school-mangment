@@ -18,6 +18,7 @@ final class ConfirmTopupIntent
             if ($intent->status === 'succeeded') {
                 return $intent;
             }
+            abort_if(in_array($intent->status, ['cancelled', 'failed', 'refunded'], true), 422, 'This payment intent can no longer be confirmed.');
             abort_unless($this->paymentGateway->isPaid($intent->gateway_payment_id), 422, 'Payment has not been confirmed by the gateway.');
             $this->applyWalletTransaction->handle(['account_id' => $intent->wallet_account_id, 'type' => WalletTransaction::CREDIT, 'amount' => $intent->amount, 'idempotency_key' => "payment-intent:{$intent->id}", 'reference_type' => PaymentIntent::class, 'reference_id' => $intent->id]);
             $intent->update(['status' => 'succeeded', 'confirmed_at' => now()]);

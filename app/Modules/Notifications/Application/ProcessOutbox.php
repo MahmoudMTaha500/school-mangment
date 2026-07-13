@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Notifications\Domain\Models\InAppNotification;
 use App\Modules\Notifications\Domain\Models\NotificationPreference;
 use App\Modules\Notifications\Domain\Models\OutboxMessage;
+use App\Modules\SIS\Domain\Models\ParentProfile;
 use App\Modules\Wallet\Domain\Models\WalletAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -34,6 +35,9 @@ final class ProcessOutbox
             if (in_array($message->event_type, ['WalletCredited', 'WalletDebited'], true)) {
                 $this->deliverWalletEvent($message);
             }
+            if ($message->event_type === 'AttendanceAbsenceRecorded') {
+                $this->deliverAttendanceAbsenceEvent($message);
+            }
 
             $message->update(['processed_at' => now()]);
         });
@@ -54,6 +58,21 @@ final class ProcessOutbox
             'notifiable_id' => $userId,
             'data' => $message->payload + ['message' => $message->event_type === 'WalletCredited' ? 'Wallet credited.' : 'Wallet debited.'],
         ]);
+    }
+
+    private function deliverAttendanceAbsenceEvent(OutboxMessage $message): void
+    {
+        $studentId = $message->payload['student_id'] ?? null;
+        if (! $studentId) {
+            return;
+        }
+
+        ParentProfile::query()->whereHas('students', fn ($query) => $query->whereKey($studentId))->pluck('user_id')->each(function (int $userId) use ($message): void {
+            if (! $this->wantsInApp($userId, $message->event_type)) {
+                return;
+            }
+            InAppNotification::query()->create(['id' => (string) Str::uuid(), 'type' => $message->event_type, 'notifiable_type' => User::class, 'notifiable_id' => $userId, 'data' => $message->payload + ['message' => 'A child was marked absent.']]);
+        });
     }
 
     private function wantsInApp(int $userId, string $eventType): bool

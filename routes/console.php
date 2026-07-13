@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('outbox:dispatch')->everyMinute()->withoutOverlapping();
+Schedule::command('wallet:reconcile-topups')->everyTenMinutes()->withoutOverlapping();

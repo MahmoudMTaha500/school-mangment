@@ -21,10 +21,13 @@ final class RecordAttendance
 
         DB::transaction(function () use ($data, $userId): void {
             foreach ($data['records'] as $record) {
-                AttendanceRecord::query()->updateOrCreate(
+                $attendance = AttendanceRecord::query()->updateOrCreate(
                     ['student_id' => $record['student_id'], 'date' => $data['date'], 'period' => $data['period']],
                     ['class_section_id' => $data['class_section_id'], 'status' => $record['status'], 'recorded_by' => $userId, 'justification' => $record['justification'] ?? null],
                 );
+                if ($attendance->status === 'absent') {
+                    DB::table('outbox_messages')->insert(['event_type' => 'AttendanceAbsenceRecorded', 'payload' => json_encode(['attendance_id' => $attendance->id, 'student_id' => $attendance->student_id, 'date' => $attendance->date, 'period' => $attendance->period], JSON_THROW_ON_ERROR), 'available_at' => now(), 'attempts' => 0, 'created_at' => now(), 'updated_at' => now()]);
+                }
             }
         });
     }
