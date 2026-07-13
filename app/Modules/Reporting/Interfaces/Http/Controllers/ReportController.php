@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Reporting\Application\BuildAttendanceSummary;
 use App\Modules\Reporting\Application\BuildHomeworkSummary;
 use App\Modules\Reporting\Application\BuildWalletSummary;
+use App\Support\Csv;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -41,7 +42,7 @@ final class ReportController extends Controller
             $stream = fopen('php://output', 'w');
             fputcsv($stream, ['status', 'total']);
             foreach ($buildAttendanceSummary->handle($data['class_section_id'], $data['from'], $data['to']) as $row) {
-                fputcsv($stream, $row);
+                fputcsv($stream, Csv::row((array) $row));
             } fclose($stream);
         }, 'attendance-summary.csv', ['Content-Type' => 'text/csv']);
     }

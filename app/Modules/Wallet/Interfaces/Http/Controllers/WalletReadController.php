@@ -7,6 +7,7 @@ use App\Modules\SIS\Domain\Models\ParentProfile;
 use App\Modules\SIS\Domain\Models\Student;
 use App\Modules\Wallet\Domain\Models\WalletAccount;
 use App\Modules\Wallet\Domain\Models\WalletTransaction;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ final class WalletReadController extends Controller
             fputcsv($stream, ['id', 'account_id', 'type', 'amount_minor', 'balance_after_minor', 'reference_type', 'reference_id', 'created_at']);
             WalletTransaction::query()->whereIn('account_id', $accountIds)->orderBy('created_at')->chunkById(500, function ($transactions) use ($stream): void {
                 foreach ($transactions as $transaction) {
-                    fputcsv($stream, [$transaction->id, $transaction->account_id, $transaction->type, $transaction->amount, $transaction->balance_after, $transaction->reference_type, $transaction->reference_id, $transaction->created_at?->toISOString()]);
+                    fputcsv($stream, Csv::row([$transaction->id, $transaction->account_id, $transaction->type, $transaction->amount, $transaction->balance_after, $transaction->reference_type, $transaction->reference_id, $transaction->created_at?->toISOString()]));
                 }
             });
             fclose($stream);

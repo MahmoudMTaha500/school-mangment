@@ -1,0 +1,23 @@
+{
+    "name": "school-management-mobile",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Parent and student mobile app for the School Management SaaS (React Native).",
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "android": "react-native run-android",
+        "ios": "react-native run-ios"
+    },
+    "dependencies": {
+        "expo-secure-store": "^14.0.0",
+        "react": "^19.0.0",
+        "react-native": "^0.79.0"
+    },
+    "devDependencies": {
+        "@types/react": "^19.0.0",
+        "typescript": "^5.6.0",
+        "vitest": "^3.0.0"
+    }
+}

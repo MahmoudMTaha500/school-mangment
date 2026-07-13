@@ -11,11 +11,13 @@ use App\Modules\Homework\Interfaces\Http\Controllers\HomeworkReadController;
 use App\Modules\IdentityAccess\Interfaces\Http\Controllers\AuditLogController;
 use App\Modules\IdentityAccess\Interfaces\Http\Controllers\MobileProfileController;
 use App\Modules\IdentityAccess\Interfaces\Http\Controllers\TenantAuthController;
+use App\Modules\Notifications\Interfaces\Http\Controllers\DeviceTokenController;
 use App\Modules\Notifications\Interfaces\Http\Controllers\NotificationController;
 use App\Modules\Reporting\Interfaces\Http\Controllers\ReportController;
 use App\Modules\SIS\Interfaces\Http\Controllers\MobileStudentController;
 use App\Modules\SIS\Interfaces\Http\Controllers\SisController;
 use App\Modules\Staff\Interfaces\Http\Controllers\StaffController;
+use App\Modules\Wallet\Interfaces\Http\Controllers\StripeWebhookController;
 use App\Modules\Wallet\Interfaces\Http\Controllers\TopupController;
 use App\Modules\Wallet\Interfaces\Http\Controllers\WalletController;
 use App\Modules\Wallet\Interfaces\Http\Controllers\WalletReadController;
@@ -43,6 +45,9 @@ Route::prefix('api/v1')->middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     Route::post('/auth/login', [TenantAuthController::class, 'login']);
+    // Authenticated by Stripe signature, not a bearer token, so it lives
+    // outside the auth:sanctum group. Tenancy is already resolved by domain.
+    Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/auth/me', [TenantAuthController::class, 'me']);
         Route::get('/me', [MobileProfileController::class, 'me']);
@@ -52,6 +57,8 @@ Route::prefix('api/v1')->middleware([
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
         Route::put('/notification-preferences', [NotificationController::class, 'updatePreference']);
+        Route::post('/me/device-tokens', [DeviceTokenController::class, 'store']);
+        Route::delete('/me/device-tokens', [DeviceTokenController::class, 'destroy']);
         Route::middleware('can:school.manage')->get('/audit-logs', [AuditLogController::class, 'index']);
         Route::middleware('can:sis.manage')->group(function (): void {
             Route::get('/sis/students', [SisController::class, 'students']);

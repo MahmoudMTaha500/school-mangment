@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 final class OutboxMessage extends Model
 {
-    protected $fillable = ['event_type', 'payload', 'available_at', 'processed_at', 'attempts'];
+    protected $fillable = ['event_type', 'payload', 'available_at', 'processed_at', 'attempts', 'failed_at', 'last_error'];
 
     protected function casts(): array
     {
-        return ['payload' => 'array', 'available_at' => 'datetime', 'processed_at' => 'datetime'];
+        return ['payload' => 'array', 'available_at' => 'datetime', 'processed_at' => 'datetime', 'failed_at' => 'datetime'];
     }
 }

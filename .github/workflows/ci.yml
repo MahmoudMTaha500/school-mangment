@@ -5,7 +5,8 @@ on:
   pull_request:
 
 jobs:
-  quality:
+  backend:
+    name: Backend (PHP)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,8 +15,34 @@ jobs:
           php-version: '8.4'
           extensions: pdo_sqlite
       - run: composer install --no-interaction --prefer-dist --no-progress
-      - run: npm install --no-audit --no-fund
-      - run: npm run build
       - run: vendor/bin/pint --test
       - run: php artisan test
       - run: docker compose config --quiet
+
+  web:
+    name: Web app (React)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  mobile:
+    name: Mobile app (React Native)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test

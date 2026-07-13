@@ -53,6 +53,30 @@ paths:
       summary: Debit a wallet with an idempotency key
       security: [{ bearerAuth: [] }]
       responses: { '201': { description: Ledger transaction recorded }, '422': { description: Insufficient balance } }
+  /wallet/topups:
+    post:
+      summary: Create a wallet top-up intent and gateway checkout session
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Checkout session created with checkout_url } }
+  /webhooks/stripe:
+    post:
+      summary: Stripe payment webhook (signature-authenticated, no bearer token)
+      description: >
+        Verifies the Stripe-Signature header against the endpoint signing secret
+        and rejects stale/replayed timestamps. Delivery is idempotent: a repeated
+        event id is dropped and the ledger credit is applied at most once.
+      responses:
+        '200': { description: Event accepted (status ok or duplicate) }
+        '400': { description: Missing/invalid signature or malformed payload }
+  /me/device-tokens:
+    post:
+      summary: Register a device push token for the current user
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { description: Token registered } }
+    delete:
+      summary: Remove a device push token for the current user
+      security: [{ bearerAuth: [] }]
+      responses: { '204': { description: Token removed } }
   /notifications:
     get:
       summary: List the current tenant user's in-app notifications
