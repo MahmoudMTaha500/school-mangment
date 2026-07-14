@@ -84,6 +84,33 @@ After `docker compose up --build -d`, these accounts are ready:
 
 The predictable passwords are for local review only and must never be enabled in production.
 
+## Web dashboard access
+
+Start the Docker stack:
+
+```powershell
+docker compose up --build -d
+```
+
+Open the shared login page:
+
+```text
+http://localhost:8080/login
+```
+
+For the Green Valley tenant dashboard, select **School user** and sign in with:
+
+```text
+Email: school-admin@example.com
+Password: password
+```
+
+The tenant address is configured by `VITE_TENANT_API_BASE_URL`, so users do not enter an API URL on the login screen. The school administrator can access students, parents, homework, wallets, reports, notifications, and audit logs according to assigned permissions.
+
+Teachers use the same login page with `teacher@school.test` and `password`. Their navigation is limited by the teacher role.
+
+The central platform administrator account is `admin@example.com` with password `password`. Central platform authentication is available through `POST /api/v1/platform/login`, but a dedicated central platform web portal for tenant creation and management has not been implemented yet. School administration and central platform administration are separate scopes.
+
 ## Create a custom platform administrator
 
 The platform administrator lives in the **central** database and can create schools.
