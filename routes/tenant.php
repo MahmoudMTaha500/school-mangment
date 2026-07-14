@@ -57,27 +57,42 @@ Route::prefix('api/v1')->middleware([
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
         Route::put('/notification-preferences', [NotificationController::class, 'updatePreference']);
+        Route::get('/notification-preferences', [NotificationController::class, 'preferences']);
+        Route::get('/notification-preferences/{preference}', [NotificationController::class, 'showPreference']);
+        Route::delete('/notification-preferences/{preference}', [NotificationController::class, 'destroyPreference']);
         Route::post('/me/device-tokens', [DeviceTokenController::class, 'store']);
         Route::delete('/me/device-tokens', [DeviceTokenController::class, 'destroy']);
         Route::middleware('can:school.manage')->get('/audit-logs', [AuditLogController::class, 'index']);
         Route::middleware('can:sis.manage')->group(function (): void {
             Route::get('/sis/students', [SisController::class, 'students']);
+            Route::get('/sis/students/{student}', [SisController::class, 'showStudent']);
             Route::post('/sis/academic-years', [SisController::class, 'createAcademicYear']);
             Route::get('/sis/class-sections', [SisController::class, 'classSections']);
+            Route::get('/sis/class-sections/{classSection}', [SisController::class, 'showClassSection']);
             Route::post('/sis/class-sections', [SisController::class, 'createClassSection']);
+            Route::patch('/sis/class-sections/{classSection}', [SisController::class, 'updateClassSection']);
+            Route::delete('/sis/class-sections/{classSection}', [SisController::class, 'archiveClassSection']);
             Route::post('/sis/students', [SisController::class, 'createStudent']);
             Route::patch('/sis/students/{student}', [SisController::class, 'updateStudent']);
             Route::delete('/sis/students/{student}', [SisController::class, 'deleteStudent']);
             Route::post('/sis/students/{student}/account', [SisController::class, 'createStudentAccount']);
             Route::get('/sis/parents', [SisController::class, 'parents']);
+            Route::get('/sis/parents/{parent}', [SisController::class, 'showParent']);
             Route::post('/sis/parents', [SisController::class, 'createParent']);
+            Route::patch('/sis/parents/{parent}', [SisController::class, 'updateParent']);
+            Route::delete('/sis/parents/{parent}', [SisController::class, 'archiveParent']);
             Route::post('/sis/parents/{parent}/students/{student}', [SisController::class, 'linkParent']);
         });
         Route::middleware('can:staff.manage')->group(function (): void {
             Route::get('/staff/teachers', [StaffController::class, 'teachers']);
+            Route::get('/staff/teachers/{teacher}', [StaffController::class, 'showTeacher']);
             Route::post('/staff/teachers', [StaffController::class, 'createTeacher']);
+            Route::patch('/staff/teachers/{teacher}', [StaffController::class, 'updateTeacher']);
+            Route::delete('/staff/teachers/{teacher}', [StaffController::class, 'archiveTeacher']);
             Route::get('/staff/subjects', [StaffController::class, 'subjects']);
+            Route::get('/staff/subjects/{subject}', [StaffController::class, 'showSubject']);
             Route::post('/staff/subjects', [StaffController::class, 'createSubject']);
+            Route::patch('/staff/subjects/{subject}', [StaffController::class, 'updateSubject']);
             Route::delete('/staff/subjects/{subject}', [StaffController::class, 'deleteSubject']);
             Route::post('/staff/assignments', [StaffController::class, 'assignTeacher']);
         });
@@ -92,6 +107,9 @@ Route::prefix('api/v1')->middleware([
         Route::middleware('can:homework.create')->delete('/homework/{homework}', [HomeworkController::class, 'archive']);
         Route::middleware('can:homework.create')->put('/homework/{homework}/rubric', [HomeworkController::class, 'replaceRubric']);
         Route::middleware('can:homework.view')->get('/homework', [HomeworkReadController::class, 'index']);
+        Route::middleware('can:homework.view')->get('/homework/{homework}', [HomeworkReadController::class, 'show']);
+        Route::middleware('can:homework.grade')->get('/homework/{homework}/submissions', [HomeworkReadController::class, 'submissions']);
+        Route::middleware('can:homework.view')->get('/submissions/{submission}', [HomeworkReadController::class, 'showSubmission']);
         Route::middleware('can:homework.view')->get('/me/homework', [MobileStudentController::class, 'homework']);
         Route::middleware('can:homework.submit')->post('/homework/{homework}/submissions', [HomeworkController::class, 'submit']);
         Route::middleware('can:homework.submit')->post('/submissions/{submission}/attachments', [AttachmentController::class, 'storeSubmission']);
@@ -100,7 +118,11 @@ Route::prefix('api/v1')->middleware([
         Route::get('/attachments/{attachment}', [AttachmentController::class, 'download']);
         Route::middleware('can:homework.grade')->post('/homework/{homework}/submissions/{submission}/grade', [HomeworkController::class, 'grade']);
         Route::middleware('can:wallet.manage')->group(function (): void {
+            Route::get('/wallet/accounts', [WalletController::class, 'accounts']);
             Route::post('/wallet/accounts', [WalletController::class, 'createAccount']);
+            Route::get('/wallet/accounts/{walletAccount}', [WalletController::class, 'showAccount']);
+            Route::patch('/wallet/accounts/{walletAccount}', [WalletController::class, 'updateAccount']);
+            Route::delete('/wallet/accounts/{walletAccount}', [WalletController::class, 'archiveAccount']);
             Route::post('/wallet/credit', [WalletController::class, 'credit']);
             Route::post('/wallet/debit', [WalletController::class, 'debit']);
         });

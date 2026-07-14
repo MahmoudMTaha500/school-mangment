@@ -20,6 +20,7 @@ final class ApplyWalletTransaction
         try {
             return DB::transaction(function () use ($data): WalletTransaction {
                 $account = WalletAccount::query()->lockForUpdate()->findOrFail($data['account_id']);
+                abort_unless($account->status === 'active', 422, 'Wallet account is archived.');
                 $existing = WalletTransaction::query()->where('idempotency_key', $data['idempotency_key'])->first();
                 if ($existing) {
                     return $existing;

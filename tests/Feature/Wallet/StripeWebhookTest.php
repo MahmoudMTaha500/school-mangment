@@ -31,6 +31,7 @@ final class StripeWebhookTest extends TestCase
             $table->string('owner_type');
             $table->unsignedBigInteger('owner_id');
             $table->bigInteger('balance_cached')->default(0);
+            $table->string('status')->default('active');
             $table->string('currency', 3);
             $table->timestamps();
         });

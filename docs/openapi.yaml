@@ -1,95 +1,211 @@
 openapi: 3.1.0
 info:
   title: School Management SaaS API
-  version: 0.1.0
+  version: 1.0.0
+  description: Domain-resolved database-per-school API. Tenant calls require the school domain and a Sanctum bearer token unless documented otherwise.
 servers:
   - url: http://localhost:8080/api/v1
-    description: Central platform API
+    description: Central API or tenant API when the Host header is supplied
   - url: http://{school}.localhost:8080/api/v1
-    description: Tenant school API
+    description: Tenant API
     variables:
       school: { default: green-valley }
+tags:
+  - { name: Platform }
+  - { name: Authentication }
+  - { name: SIS }
+  - { name: Staff }
+  - { name: Attendance }
+  - { name: Homework }
+  - { name: Wallet }
+  - { name: Notifications }
+  - { name: Reports }
 paths:
+  /health:
+    get: { tags: [Platform], summary: Health check, responses: { '200': { $ref: '#/components/responses/Ok' } } }
   /platform/login:
     post:
-      summary: Authenticate a Platform Admin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/LoginRequest' }
-      responses: { '200': { description: Token issued } }
+      tags: [Platform]
+      summary: Authenticate a platform administrator
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LoginRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Token' }, '422': { $ref: '#/components/responses/ValidationError' } }
   /schools:
     post:
-      summary: Provision a school tenant
+      tags: [Platform]
+      summary: Provision a school and its isolated database
       security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Tenant database provisioned }, '403': { description: Platform Admin required } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SchoolRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '422': { $ref: '#/components/responses/ValidationError' } }
   /auth/login:
     post:
+      tags: [Authentication]
       summary: Authenticate a tenant user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/LoginRequest' }
-      responses: { '200': { description: Token issued } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LoginRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Token' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /auth/me:
+    get: { tags: [Authentication], summary: Current authenticated user, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthenticated' } } }
+  /auth/logout:
+    post: { tags: [Authentication], summary: Revoke current token, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /sis/students:
+    get:
+      tags: [SIS]
+      summary: List students
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }, { name: class_section_id, in: query, schema: { type: integer } }]
+      responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post:
+      tags: [SIS]
+      summary: Create student
+      security: [{ bearerAuth: [] }]
+      responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /sis/students/{student}:
+    parameters: [{ $ref: '#/components/parameters/StudentId' }]
+    get: { tags: [SIS], summary: Student detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '404': { $ref: '#/components/responses/NotFound' } } }
+    patch: { tags: [SIS], summary: Update student, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [SIS], summary: Archive student, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /sis/parents:
+    get:
+      tags: [SIS]
+      summary: List parents
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }]
+      responses: { '200': { $ref: '#/components/responses/Page' } }
+    post: { tags: [SIS], summary: Create parent, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /sis/parents/{parent}:
+    parameters: [{ $ref: '#/components/parameters/ParentId' }]
+    get: { tags: [SIS], summary: Parent detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    patch: { tags: [SIS], summary: Update or restore parent, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [SIS], summary: Archive parent, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /sis/class-sections:
+    get:
+      tags: [SIS]
+      summary: List class sections
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }, { name: academic_year_id, in: query, schema: { type: integer } }]
+      responses: { '200': { $ref: '#/components/responses/Page' } }
+    post: { tags: [SIS], summary: Create class section, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /sis/class-sections/{classSection}:
+    parameters: [{ $ref: '#/components/parameters/ClassSectionId' }]
+    get: { tags: [SIS], summary: Class-section detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    patch: { tags: [SIS], summary: Update or restore class section, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [SIS], summary: Archive class section, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /staff/teachers:
+    get:
+      tags: [Staff]
+      summary: List teachers
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }]
+      responses: { '200': { $ref: '#/components/responses/Page' } }
+    post: { tags: [Staff], summary: Create teacher, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /staff/teachers/{teacher}:
+    parameters: [{ $ref: '#/components/parameters/TeacherId' }]
+    get: { tags: [Staff], summary: Teacher detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    patch: { tags: [Staff], summary: Update or restore teacher, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [Staff], summary: Archive teacher, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /staff/subjects:
+    get:
+      tags: [Staff]
+      summary: List subjects
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }]
+      responses: { '200': { $ref: '#/components/responses/Page' } }
+    post: { tags: [Staff], summary: Create subject, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /staff/subjects/{subject}:
+    parameters: [{ $ref: '#/components/parameters/SubjectId' }]
+    get: { tags: [Staff], summary: Subject detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    patch: { tags: [Staff], summary: Update or restore subject, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [Staff], summary: Archive subject, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
   /attendance:
-    post:
-      summary: Record attendance for a class
-      security: [{ bearerAuth: [] }]
-      responses: { '204': { description: Attendance recorded } }
+    get: { tags: [Attendance], summary: List a student's attendance, security: [{ bearerAuth: [] }], parameters: [{ name: student_id, in: query, required: true, schema: { type: integer } }], responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+    post: { tags: [Attendance], summary: Record class attendance, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /attendance/{attendance}/correct:
+    patch: { tags: [Attendance], summary: Correct attendance with immutable audit record, security: [{ bearerAuth: [] }], parameters: [{ name: attendance, in: path, required: true, schema: { type: integer } }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
   /homework:
-    post:
-      summary: Create homework
+    get:
+      tags: [Homework]
+      summary: Filtered homework list
       security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Homework created } }
+      parameters: [{ name: student_id, in: query, schema: { type: integer } }, { name: class_section_id, in: query, schema: { type: integer } }, { name: subject_id, in: query, schema: { type: integer } }, { $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }]
+      responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post: { tags: [Homework], summary: Create homework, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /homework/{homework}:
+    parameters: [{ $ref: '#/components/parameters/HomeworkId' }]
+    get: { tags: [Homework], summary: Homework detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+    patch: { tags: [Homework], summary: Update homework, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [Homework], summary: Archive homework, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' } } }
+  /homework/{homework}/submissions:
+    parameters: [{ $ref: '#/components/parameters/HomeworkId' }]
+    get: { tags: [Homework], summary: List homework submissions for teacher/admin, security: [{ bearerAuth: [] }], parameters: [{ $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }], responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+    post: { tags: [Homework], summary: Submit or replace a student's submission, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /submissions/{submission}:
+    get: { tags: [Homework], summary: Authorized submission detail, security: [{ bearerAuth: [] }], parameters: [{ $ref: '#/components/parameters/SubmissionId' }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
+  /submissions/{submission}/attachments:
+    parameters: [{ $ref: '#/components/parameters/SubmissionId' }]
+    get: { tags: [Homework], summary: List submission attachments, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    post: { tags: [Homework], summary: Upload submission attachment, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /wallet/accounts:
+    get:
+      tags: [Wallet]
+      summary: List wallet accounts for administrators
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }, { name: owner_type, in: query, schema: { type: string, enum: [parent, student] } }]
+      responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post: { tags: [Wallet], summary: Create wallet account, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
+  /wallet/accounts/{walletAccount}:
+    parameters: [{ $ref: '#/components/parameters/WalletAccountId' }]
+    get: { tags: [Wallet], summary: Wallet-account detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+    patch: { tags: [Wallet], summary: Update or restore wallet account, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    delete: { tags: [Wallet], summary: Archive zero-balance wallet account, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' }, '422': { $ref: '#/components/responses/ValidationError' } } }
   /wallet/credit:
-    post:
-      summary: Credit a wallet with an idempotency key
-      security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Ledger transaction recorded } }
+    post: { tags: [Wallet], summary: Append idempotent wallet credit, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
   /wallet/debit:
-    post:
-      summary: Debit a wallet with an idempotency key
-      security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Ledger transaction recorded }, '422': { description: Insufficient balance } }
+    post: { tags: [Wallet], summary: Append idempotent wallet debit, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /wallet/me:
+    get: { tags: [Wallet], summary: Current user's wallets and recent transactions, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
   /wallet/topups:
-    post:
-      summary: Create a wallet top-up intent and gateway checkout session
-      security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Checkout session created with checkout_url } }
-  /webhooks/stripe:
-    post:
-      summary: Stripe payment webhook (signature-authenticated, no bearer token)
-      description: >
-        Verifies the Stripe-Signature header against the endpoint signing secret
-        and rejects stale/replayed timestamps. Delivery is idempotent: a repeated
-        event id is dropped and the ledger credit is applied at most once.
-      responses:
-        '200': { description: Event accepted (status ok or duplicate) }
-        '400': { description: Missing/invalid signature or malformed payload }
-  /me/device-tokens:
-    post:
-      summary: Register a device push token for the current user
-      security: [{ bearerAuth: [] }]
-      responses: { '201': { description: Token registered } }
-    delete:
-      summary: Remove a device push token for the current user
-      security: [{ bearerAuth: [] }]
-      responses: { '204': { description: Token removed } }
+    post: { tags: [Wallet], summary: Create payment intent, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
   /notifications:
-    get:
-      summary: List the current tenant user's in-app notifications
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Notification page } }
+    get: { tags: [Notifications], summary: Current user's notifications, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Page' } } }
+  /notification-preferences:
+    get: { tags: [Notifications], summary: List current user's preferences, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Page' } } }
+    put: { tags: [Notifications], summary: Create or update an event preference, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+  /notification-preferences/{preference}:
+    parameters: [{ name: preference, in: path, required: true, schema: { type: integer } }]
+    get: { tags: [Notifications], summary: Preference detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '404': { $ref: '#/components/responses/NotFound' } } }
+    delete: { tags: [Notifications], summary: Reset preference to defaults, security: [{ bearerAuth: [] }], responses: { '204': { $ref: '#/components/responses/NoContent' }, '404': { $ref: '#/components/responses/NotFound' } } }
+  /webhooks/stripe:
+    post: { tags: [Wallet], summary: Signature-authenticated idempotent Stripe webhook, responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { description: Invalid signature or payload } } }
   /reports/attendance:
-    get:
-      summary: Attendance summary for a class and date range
-      security: [{ bearerAuth: [] }]
-      responses: { '200': { description: Summary } }
+    get: { tags: [Reports], summary: Attendance report, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+  /reports/homework:
+    get: { tags: [Reports], summary: Homework report, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+  /reports/wallet:
+    get: { tags: [Reports], summary: Wallet report, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: Sanctum }
+  parameters:
+    Search: { name: search, in: query, schema: { type: string, maxLength: 100 } }
+    Status: { name: status, in: query, schema: { type: string } }
+    PerPage: { name: per_page, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+    StudentId: { name: student, in: path, required: true, schema: { type: integer } }
+    ParentId: { name: parent, in: path, required: true, schema: { type: integer } }
+    ClassSectionId: { name: classSection, in: path, required: true, schema: { type: integer } }
+    TeacherId: { name: teacher, in: path, required: true, schema: { type: integer } }
+    SubjectId: { name: subject, in: path, required: true, schema: { type: integer } }
+    HomeworkId: { name: homework, in: path, required: true, schema: { type: integer } }
+    SubmissionId: { name: submission, in: path, required: true, schema: { type: integer } }
+    WalletAccountId: { name: walletAccount, in: path, required: true, schema: { type: integer } }
+  responses:
+    Ok: { description: Successful response, content: { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } } }
+    Created: { description: Resource created, content: { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } } }
+    Page: { description: Paginated resource collection, content: { application/json: { schema: { $ref: '#/components/schemas/PageEnvelope' } } } }
+    Token: { description: Sanctum token issued, content: { application/json: { schema: { type: object, required: [token], properties: { token: { type: string } } } } } }
+    NoContent: { description: Successful response with no content }
+    Unauthenticated: { description: Missing or invalid token }
+    Forbidden: { description: Authenticated user lacks role, capability, or record access }
+    NotFound: { description: Resource not found or hidden by ownership policy }
+    ValidationError: { description: Validation or invalid-state error, content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } } }
   schemas:
     LoginRequest:
       type: object
@@ -97,3 +213,31 @@ components:
       properties:
         email: { type: string, format: email }
         password: { type: string, format: password }
+        device_name: { type: string }
+    SchoolRequest:
+      type: object
+      required: [name, domain, admin_name, admin_email, admin_password]
+      properties:
+        name: { type: string }
+        slug: { type: string }
+        domain: { type: string }
+        timezone: { type: string, default: UTC }
+        locale: { type: string, default: en }
+        admin_name: { type: string }
+        admin_email: { type: string, format: email }
+        admin_password: { type: string, minLength: 12 }
+    DataEnvelope:
+      type: object
+      properties: { data: {} }
+    PageEnvelope:
+      type: object
+      required: [data, links, meta]
+      properties:
+        data: { type: array, items: {} }
+        links: { type: object }
+        meta: { type: object }
+    ErrorEnvelope:
+      type: object
+      properties:
+        message: { type: string }
+        errors: { type: object }

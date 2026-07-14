@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Teacher extends Model
 {
-    protected $fillable = ['user_id', 'staff_no'];
+    protected $fillable = ['user_id', 'staff_no', 'status', 'archived_at'];
+
+    protected function casts(): array
+    {
+        return ['archived_at' => 'datetime'];
+    }
 
     public function user(): BelongsTo
     {

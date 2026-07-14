@@ -10,7 +10,7 @@ final class TeacherClassAccess
 {
     public function teacherIdFor(int $userId): int
     {
-        return Teacher::query()->where('user_id', $userId)->value('id') ?? abort(403, 'Only teachers can perform this action.');
+        return Teacher::query()->where('user_id', $userId)->where('status', 'active')->value('id') ?? abort(403, 'Only active teachers can perform this action.');
     }
 
     public function ensureCanTeach(int $teacherId, int $classSectionId, ?int $subjectId = null): void

@@ -28,8 +28,21 @@
       "item": [
         { "name": "List Students", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/students" } },
         { "name": "Create Student", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"code\": \"S-100\",\n  \"first_name\": \"Ada\",\n  \"last_name\": \"Lovelace\"\n}" }, "url": "{{tenant_base_url}}/sis/students" } },
-        { "name": "List Teachers", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/teachers" } },
-        { "name": "List Subjects", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/subjects" } }
+        { "name": "List Parents", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/parents?status=active&search=&per_page=30" } },
+        { "name": "Parent Detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/parents/{{parent_id}}" } },
+        { "name": "Update Parent", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Parent\",\n  \"status\": \"active\"\n}" }, "url": "{{tenant_base_url}}/sis/parents/{{parent_id}}" } },
+        { "name": "Archive Parent", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/parents/{{parent_id}}" } },
+        { "name": "List Class Sections", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/class-sections?status=active&per_page=30" } },
+        { "name": "Class Section Detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/sis/class-sections/{{class_section_id}}" } },
+        { "name": "Update Class Section", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"section\": \"A\",\n  \"status\": \"active\"\n}" }, "url": "{{tenant_base_url}}/sis/class-sections/{{class_section_id}}" } },
+        { "name": "List Teachers", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/teachers?status=active&search=&per_page=30" } },
+        { "name": "Teacher Detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/teachers/{{teacher_id}}" } },
+        { "name": "Update Teacher", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"staff_no\": \"T-100\",\n  \"status\": \"active\"\n}" }, "url": "{{tenant_base_url}}/staff/teachers/{{teacher_id}}" } },
+        { "name": "Archive Teacher", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/teachers/{{teacher_id}}" } },
+        { "name": "List Subjects", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/subjects?status=active&search=&per_page=100" } },
+        { "name": "Subject Detail", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/subjects/{{subject_id}}" } },
+        { "name": "Update Subject", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }, { "key": "Content-Type", "value": "{{json}}" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mathematics\",\n  \"status\": \"active\"\n}" }, "url": "{{tenant_base_url}}/staff/subjects/{{subject_id}}" } },
+        { "name": "Archive Subject", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{tenant_token}}" }], "url": "{{tenant_base_url}}/staff/subjects/{{subject_id}}" } }
       ]
     },
     {

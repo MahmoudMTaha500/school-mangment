@@ -13,6 +13,7 @@ final class CreateTopupIntent
     /** @return array{intent:PaymentIntent,checkout_url:string} */
     public function handle(WalletAccount $account, int $amount, string $idempotencyKey): array
     {
+        abort_unless($account->status === 'active', 422, 'Wallet account is archived.');
         $existing = PaymentIntent::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing) {
             abort_unless($existing->wallet_account_id === $account->id, 422, 'Idempotency key is already associated with another wallet account.');

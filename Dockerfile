@@ -9,11 +9,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 FROM base AS development
 ARG INSTALL_XDEBUG=false
 RUN if [ "$INSTALL_XDEBUG" = "true" ]; then pecl install xdebug && docker-php-ext-enable xdebug; fi
+COPY . .
+RUN composer install --no-interaction --prefer-dist
 CMD ["php-fpm"]
 
 FROM base AS production
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 COPY . .
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache
 CMD ["php-fpm"]

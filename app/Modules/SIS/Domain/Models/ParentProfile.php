@@ -11,7 +11,12 @@ final class ParentProfile extends Model
 {
     protected $table = 'parents';
 
-    protected $fillable = ['user_id'];
+    protected $fillable = ['user_id', 'status', 'archived_at'];
+
+    protected function casts(): array
+    {
+        return ['archived_at' => 'datetime'];
+    }
 
     public function user(): BelongsTo
     {

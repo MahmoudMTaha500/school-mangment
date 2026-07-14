@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class ClassSection extends Model
 {
-    protected $fillable = ['academic_year_id', 'grade', 'section', 'homeroom_teacher_id'];
+    protected $fillable = ['academic_year_id', 'grade', 'section', 'homeroom_teacher_id', 'status', 'archived_at'];
+
+    protected function casts(): array
+    {
+        return ['archived_at' => 'datetime'];
+    }
 
     public function academicYear(): BelongsTo
     {

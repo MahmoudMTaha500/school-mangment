@@ -4,7 +4,7 @@ This is the implementation status of the work described in [COMPLETION_PLAN.md](
 
 | Phase | Status | Delivered | Remaining acceptance/work |
 | --- | --- | --- | --- |
-| 1 — Close core API gaps | Partially complete | Form Requests and JsonResources for the main SIS, staff, attendance, homework, wallet, and notification flows; core create/list/update operations; homework archive and attachment list/delete. | Complete an endpoint-by-endpoint API audit, add remaining detail/filter/sort coverage, update all OpenAPI operations, and add success/validation/forbidden feature tests for every public API. |
+| 1 — Close core API gaps | Complete | Authorized lifecycle endpoints for students, parents, teachers, class sections, subjects, homework, submissions, wallet accounts, attachments, and notification preferences; status-based archival; validated search/filter/sort/pagination; Form Requests, JsonResources, OpenAPI, Postman, and Phase 1 contract tests. | No planned Phase 1 application work remains. Broader browser and MySQL acceptance remains in Phase 6. |
 | 2 — Complete business workflows | Functionally complete | Attendance corrections, justifications, CSV export, parent absence alerts; homework edit/archive/late submissions/attachments/rubrics; wallet cancellation/failure/refund/history export and scheduled per-tenant reconciliation. | Run true concurrent MySQL load tests for wallet rows. This is also tracked as Phase 6 operational validation. |
 | 3 — Real integrations | In progress | Stripe Checkout adapter behind `PaymentGateway` (driver-switched via `PAYMENTS_DRIVER`); signature-verified, replay-safe, idempotent `/webhooks/stripe` endpoint; email/FCM push/SMS notification channels behind a `NotificationChannel` interface with per-user preference fan-out; device-token registration endpoints; outbox retry with exponential backoff and dead-lettering. | Wire real Stripe/FCM/SMS credentials in a secrets store; add a provider webhook secret per tenant if per-school Stripe accounts are used; dead-letter alerting/observability. |
 | 4 — Admin and teacher web application | In progress | React + TypeScript SPA (Vite + Tailwind) replacing the static shell: session-based auth against the tenant/platform login, a typed API client that unwraps the `data` envelopes, role-aware navigation and route guards driven by the API's own permissions, and working Students / Wallet / Reports / Notifications / Audit-log screens. Vitest + Testing Library cover the client, nav gating, and login flow. | Flesh out remaining CRUD (staff, classes, homework, attendance) and pagination controls; add browser (Playwright) and automated accessibility tests; wire deeper report visualizations. |
@@ -13,11 +13,13 @@ This is the implementation status of the work described in [COMPLETION_PLAN.md](
 
 ## Verified now
 
-- `php artisan test` passes: 26 tests and 59 assertions (includes Stripe signature verification, replay-safe webhook credit, outbox dead-lettering, login throttling/timing safety, and CSV-injection sanitisation).
+- One-command reviewer bootstrap is verified: `docker compose up --build -d` builds dependencies, runs the idempotent `init` migration/seeding service, and starts app/queue/scheduler after successful initialization.
+- Review login is verified with `school-admin@example.com / password` on `green-valley.localhost`.
+- `php artisan test` passes: 30 tests and 105 assertions (includes Phase 1 route/capability/validation/archive contracts, Stripe signature verification, replay-safe webhook credit, outbox dead-lettering, login throttling/timing safety, and CSV-injection sanitisation).
 - `vendor/bin/pint --test` passes.
 - Web app: `npm run typecheck`, `npm test` (12 Vitest tests), and `npm run build` all pass.
 - Mobile app (`mobile/`): `npm run typecheck` and `npm test` (14 Vitest tests) pass. Native device builds require generating `android/`/`ios` projects locally.
-- Tenant migrations through `2026_07_13_000011_create_homework_rubric_tables` are applied to `green-valley`.
+- Tenant migrations through `2026_07_14_000015_add_phase_one_resource_status_fields` are applied to `green-valley`.
 - Docker scheduler runs outbox dispatch every minute and wallet reconciliation every ten minutes.
 
 ## Important boundaries

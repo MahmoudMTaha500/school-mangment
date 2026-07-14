@@ -1,7 +1,13 @@
 services:
   app:
     build: { context: ., target: development }
-    volumes: [".:/var/www/html"]
+    volumes: [".:/var/www/html", "vendor-data:/var/www/html/vendor"]
+    environment: { DB_HOST: mysql, REDIS_HOST: redis }
+    depends_on: { init: { condition: service_completed_successfully } }
+  init:
+    build: { context: ., target: development }
+    command: php artisan demo:setup --force
+    volumes: [".:/var/www/html", "vendor-data:/var/www/html/vendor"]
     environment: { DB_HOST: mysql, REDIS_HOST: redis }
     depends_on: { mysql: { condition: service_healthy }, redis: { condition: service_healthy } }
   nginx:
@@ -21,14 +27,14 @@ services:
   queue:
     build: { context: ., target: development }
     command: php artisan queue:work --tries=3
-    volumes: [".:/var/www/html"]
-    depends_on: { mysql: { condition: service_healthy }, redis: { condition: service_healthy } }
+    volumes: [".:/var/www/html", "vendor-data:/var/www/html/vendor"]
+    depends_on: { init: { condition: service_completed_successfully } }
   scheduler:
     build: { context: ., target: development }
     command: php artisan schedule:work
-    volumes: [".:/var/www/html"]
-    depends_on: { mysql: { condition: service_healthy }, redis: { condition: service_healthy } }
+    volumes: [".:/var/www/html", "vendor-data:/var/www/html/vendor"]
+    depends_on: { init: { condition: service_completed_successfully } }
   mailpit:
     image: axllent/mailpit:latest
     ports: ["${FORWARD_MAILPIT_PORT:-8026}:8025"]
-volumes: { mysql-data: {} }
+volumes: { mysql-data: {}, vendor-data: {} }

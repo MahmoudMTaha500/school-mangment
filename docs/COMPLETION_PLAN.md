@@ -4,6 +4,8 @@ This plan completes the current tenant-isolated backend without weakening the da
 
 ## Phase 1 — Close core API gaps
 
+**Status: complete.** The listed resources now have authorized lifecycle endpoints, validated query controls, API Resources, OpenAPI/Postman coverage, and Phase 1 contract tests.
+
 ### Scope
 
 - Add update, archive, list, and detail endpoints for parents, teachers, classes, subjects, homework, submissions, wallet accounts, and notification preferences.

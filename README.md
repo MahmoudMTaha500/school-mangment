@@ -23,9 +23,10 @@ Do **not** install MySQL, Redis, or PHP extensions locally just to run the appli
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build -d
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --force
+docker compose logs init
 ```
+
+The one-shot `init` container automatically generates `APP_KEY` when needed, runs central migrations, provisions `green-valley`, runs every tenant migration, and seeds review data. It is idempotent, so restarting the stack does not duplicate records.
 
 The services are:
 
@@ -72,7 +73,21 @@ REDIS_PORT=6379
 
 Important: inside Docker, `DB_HOST` must be `mysql`, not `localhost`; `REDIS_HOST` must be `redis`. `localhost` refers to the current container, not another Docker service.
 
-## Create the platform administrator
+## Ready-to-use review accounts
+
+After `docker compose up --build -d`, these accounts are ready:
+
+| Scope | Email | Password |
+| --- | --- | --- |
+| Platform | `admin@example.com` | `password` |
+| Green Valley school admin | `school-admin@example.com` | `password` |
+| Teacher | `teacher@school.test` | `password` |
+| Parent | `parent@school.test` | `password` |
+| Student | `student@school.test` | `password` |
+
+The predictable passwords are for local review only and must never be enabled in production.
+
+## Create a custom platform administrator
 
 The platform administrator lives in the **central** database and can create schools.
 
@@ -83,20 +98,20 @@ docker compose exec app php artisan platform:make-admin admin@example.com --name
 Log in and copy the returned token:
 
 ```powershell
-curl.exe -X POST http://localhost:8080/api/v1/platform/login `
+'{"email":"admin@example.com","password":"password"}' | curl.exe -X POST http://localhost:8080/api/v1/platform/login `
   -H "Content-Type: application/json" `
-  -d '{"email":"admin@example.com","password":"ChangeThisToALongPassword"}'
+  --data-binary '@-'
 ```
 
-## Provision a school tenant
+## Provision another school tenant
 
 Replace `<platform-token>` with the token from the previous request.
 
 ```powershell
-curl.exe -X POST http://localhost:8080/api/v1/schools `
+'{"name":"Another School","slug":"another-school","domain":"another-school.localhost","timezone":"Africa/Cairo","locale":"en","admin_name":"School Admin","admin_email":"admin@another-school.test","admin_password":"AnotherLongPassword123"}' | curl.exe -X POST http://localhost:8080/api/v1/schools `
   -H "Content-Type: application/json" `
   -H "Authorization: Bearer <platform-token>" `
-  -d '{"name":"Green Valley School","slug":"green-valley","domain":"green-valley.localhost","timezone":"Africa/Cairo","locale":"en","admin_name":"School Admin","admin_email":"school-admin@example.com","admin_password":"AnotherLongPassword123"}'
+  --data-binary '@-'
 ```
 
 Provisioning creates the central tenant/domain records, creates `school_green-valley`, runs the tenant migrations, creates roles/permissions, and creates the school administrator.
@@ -120,17 +135,17 @@ curl.exe http://localhost:8080/api/v1/tenant -H "Host: green-valley.localhost"
 Log in to the tenant:
 
 ```powershell
-curl.exe -X POST http://localhost:8080/api/v1/auth/login `
+'{"email":"school-admin@example.com","password":"password"}' | curl.exe -X POST http://localhost:8080/api/v1/auth/login `
   -H "Host: green-valley.localhost" `
   -H "Content-Type: application/json" `
-  -d '{"email":"school-admin@example.com","password":"AnotherLongPassword123"}'
+  --data-binary '@-'
 ```
 
 Use the returned Sanctum token as `Authorization: Bearer <tenant-token>` for tenant APIs.
 
 ## Demo data
 
-Seed one already-provisioned tenant:
+The `init` service seeds the demo tenant automatically. To restore demo records manually:
 
 ```powershell
 docker compose exec -T app php artisan tenants:seed --tenants=green-valley --force
@@ -225,8 +240,7 @@ This permanently removes the central and all tenant databases in Docker:
 ```powershell
 docker compose down -v
 docker compose up --build -d
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --force
+docker compose logs init
 ```
 
 ## Production notes
