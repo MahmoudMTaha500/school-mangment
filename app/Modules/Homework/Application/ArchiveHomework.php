@@ -2,6 +2,7 @@
 
 namespace App\Modules\Homework\Application;
 
+use App\Models\User;
 use App\Modules\Homework\Domain\Models\Homework;
 use App\Modules\Staff\Application\TeacherClassAccess;
 use Illuminate\Support\Facades\DB;
@@ -12,8 +13,11 @@ final class ArchiveHomework
 
     public function handle(int $userId, Homework $homework): void
     {
-        $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
-        $this->teacherClassAccess->ensureCanTeach($teacherId, $homework->class_section_id, $homework->subject_id);
+        $user = User::query()->findOrFail($userId);
+        if (! $user->hasRole('school-admin')) {
+            $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
+            abort_unless($homework->teacher_id === $teacherId, 403, 'Only the assigned teacher can archive this homework.');
+        }
         DB::transaction(function () use ($homework): void {
             if ($homework->status === 'archived') {
                 return;

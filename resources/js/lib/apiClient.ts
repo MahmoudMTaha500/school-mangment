@@ -62,6 +62,10 @@ export class ApiClient {
         return this.request<T>('PATCH', path, payload);
     }
 
+    async put<T>(path: string, payload?: unknown): Promise<T> {
+        return this.request<T>('PUT', path, payload);
+    }
+
     async delete(path: string): Promise<void> {
         await this.request<null>('DELETE', path);
     }

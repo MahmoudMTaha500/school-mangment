@@ -2,6 +2,7 @@
 
 namespace App\Modules\Homework\Application;
 
+use App\Models\User;
 use App\Modules\Homework\Domain\Models\Homework;
 use App\Modules\Homework\Domain\Models\Submission;
 use App\Modules\Staff\Application\TeacherClassAccess;
@@ -15,8 +16,11 @@ final class GradeSubmission
     public function handle(int $userId, Homework $homework, Submission $submission, int $grade, ?string $feedback, ?array $rubricScores = null): Submission
     {
         abort_unless($submission->homework_id === $homework->id, 404);
-        $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
-        $this->teacherClassAccess->ensureCanTeach($teacherId, $homework->class_section_id, $homework->subject_id);
+        $user = User::query()->findOrFail($userId);
+        if (! $user->hasRole('school-admin')) {
+            $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
+            abort_unless($homework->teacher_id === $teacherId, 403, 'Only the assigned teacher can grade this homework.');
+        }
 
         return DB::transaction(function () use ($homework, $submission, $grade, $feedback, $userId, $rubricScores): Submission {
             $criteria = $homework->rubricCriteria()->get()->keyBy('id');

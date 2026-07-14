@@ -9,6 +9,7 @@ use App\Modules\Wallet\Application\ReconcileTopupIntents;
 use App\Modules\Wallet\Domain\Models\PaymentIntent;
 use App\Modules\Wallet\Domain\Models\WalletAccount;
 use App\Modules\Wallet\Domain\Models\WalletTransaction;
+use App\Modules\Wallet\Interfaces\Http\Resources\WalletTransactionResource;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -77,6 +78,8 @@ final class WalletLedgerTest extends TestCase
         $this->assertSame(1500, $account->refresh()->balance_cached);
         $this->assertDatabaseCount('wallet_transactions', 1);
         $this->assertDatabaseCount('outbox_messages', 1);
+        $this->assertSame(1500, WalletTransactionResource::make($first->refresh())->resolve(request())['amount_minor']);
+        $this->assertNotNull(WalletTransactionResource::make($first)->resolve(request())['created_at']);
     }
 
     public function test_debit_cannot_make_a_balance_negative(): void

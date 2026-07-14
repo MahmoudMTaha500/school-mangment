@@ -3,6 +3,8 @@ import type { SVGProps } from 'react';
 export type IconName =
     | 'overview'
     | 'students'
+    | 'parents'
+    | 'homework'
     | 'wallet'
     | 'reports'
     | 'notifications'
@@ -22,6 +24,8 @@ export type IconName =
 const paths: Record<IconName, React.ReactNode> = {
     overview: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
     students: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
+    parents: <><circle cx="8" cy="7" r="4" /><path d="M2 21v-2a6 6 0 0 1 12 0v2" /><circle cx="17" cy="9" r="3" /><path d="M15 15a5 5 0 0 1 7 4.58V21" /></>,
+    homework: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /><path d="M8 7h8M8 11h6" /></>,
     wallet: <><path d="M20 7V5a2 2 0 0 0-2-2H5a3 3 0 0 0 0 6h15v12H5a3 3 0 0 1-3-3V6" /><path d="M16 13h2" /></>,
     reports: <><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" /></>,
     notifications: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></>,

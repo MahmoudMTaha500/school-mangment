@@ -13,6 +13,6 @@ final class StoreHomeworkRequest extends FormRequest
 
     public function rules(): array
     {
-        return ['class_section_id' => ['required', 'integer', 'exists:class_sections,id'], 'subject_id' => ['required', 'integer', 'exists:subjects,id'], 'title' => ['required', 'string', 'max:255'], 'body' => ['required', 'string'], 'due_at' => ['required', 'date', 'after:now']];
+        return ['teacher_id' => ['nullable', 'integer', 'exists:teachers,id'], 'class_section_id' => ['required', 'integer', 'exists:class_sections,id'], 'subject_id' => ['required', 'integer', 'exists:subjects,id'], 'title' => ['required', 'string', 'max:255'], 'body' => ['required', 'string'], 'due_at' => ['required', 'date', 'after:now']];
     }
 }

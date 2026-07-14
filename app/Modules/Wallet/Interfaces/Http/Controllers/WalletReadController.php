@@ -7,6 +7,8 @@ use App\Modules\SIS\Domain\Models\ParentProfile;
 use App\Modules\SIS\Domain\Models\Student;
 use App\Modules\Wallet\Domain\Models\WalletAccount;
 use App\Modules\Wallet\Domain\Models\WalletTransaction;
+use App\Modules\Wallet\Interfaces\Http\Resources\WalletAccountResource;
+use App\Modules\Wallet\Interfaces\Http\Resources\WalletTransactionResource;
 use App\Support\Csv;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -17,10 +19,23 @@ final class WalletReadController extends Controller
 {
     public function mine(Request $request): JsonResponse
     {
+        if ($request->user()->hasRole('school-admin')) {
+            return $this->overview($request);
+        }
+
         $accounts = $this->accountsFor($request);
         $transactions = WalletTransaction::query()->whereIn('account_id', $accounts->pluck('id'))->latest('created_at')->limit(100)->get();
 
-        return response()->json(['data' => ['accounts' => $accounts, 'transactions' => $transactions]]);
+        return $this->snapshotResponse($request, $accounts, $transactions);
+    }
+
+    public function overview(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->can('wallet.manage'), 403);
+        $accounts = WalletAccount::query()->where('status', 'active')->latest()->limit(100)->get();
+        $transactions = WalletTransaction::query()->whereIn('account_id', $accounts->pluck('id'))->latest('created_at')->limit(100)->get();
+
+        return $this->snapshotResponse($request, $accounts, $transactions);
     }
 
     public function transactionsCsv(Request $request): StreamedResponse
@@ -60,5 +75,17 @@ final class WalletReadController extends Controller
                 $query->orWhere(fn ($ownerQuery) => $ownerQuery->where('owner_type', $type)->where('owner_id', $id));
             }
         })->get();
+    }
+
+    /**
+     * @param  Collection<int, WalletAccount>  $accounts
+     * @param  Collection<int, WalletTransaction>  $transactions
+     */
+    private function snapshotResponse(Request $request, Collection $accounts, Collection $transactions): JsonResponse
+    {
+        return response()->json(['data' => [
+            'accounts' => WalletAccountResource::collection($accounts)->resolve($request),
+            'transactions' => WalletTransactionResource::collection($transactions)->resolve($request),
+        ]]);
     }
 }

@@ -5,6 +5,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { LoginPage } from '@/pages/LoginPage';
 import { OverviewPage } from '@/pages/OverviewPage';
 import { StudentsPage } from '@/pages/StudentsPage';
+import { ParentsPage } from '@/pages/ParentsPage';
+import { HomeworkPage } from '@/pages/HomeworkPage';
 import { WalletPage } from '@/pages/WalletPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { NotificationsPage } from '@/pages/NotificationsPage';
@@ -29,6 +31,22 @@ export function App() {
                             element={
                                 <ProtectedRoute permission="sis.manage">
                                     <StudentsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/parents"
+                            element={
+                                <ProtectedRoute permission="sis.manage">
+                                    <ParentsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/homework"
+                            element={
+                                <ProtectedRoute permission="homework.view">
+                                    <HomeworkPage />
                                 </ProtectedRoute>
                             }
                         />

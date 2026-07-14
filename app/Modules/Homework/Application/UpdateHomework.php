@@ -2,6 +2,7 @@
 
 namespace App\Modules\Homework\Application;
 
+use App\Models\User;
 use App\Modules\Homework\Domain\Models\Homework;
 use App\Modules\Staff\Application\TeacherClassAccess;
 use Illuminate\Support\Facades\DB;
@@ -14,8 +15,12 @@ final class UpdateHomework
     public function handle(int $userId, Homework $homework, array $data): Homework
     {
         abort_if($homework->status === 'archived', 422, 'Archived homework cannot be edited.');
-        $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
-        $this->teacherClassAccess->ensureCanTeach($teacherId, $data['class_section_id'] ?? $homework->class_section_id, $data['subject_id'] ?? $homework->subject_id);
+        $user = User::query()->findOrFail($userId);
+        if (! $user->hasRole('school-admin')) {
+            $teacherId = $this->teacherClassAccess->teacherIdFor($userId);
+            abort_unless($homework->teacher_id === $teacherId, 403, 'Only the assigned teacher can edit this homework.');
+            $this->teacherClassAccess->ensureCanTeach($teacherId, $data['class_section_id'] ?? $homework->class_section_id, $data['subject_id'] ?? $homework->subject_id);
+        }
 
         return DB::transaction(function () use ($homework, $data): Homework {
             $homework->update($data);

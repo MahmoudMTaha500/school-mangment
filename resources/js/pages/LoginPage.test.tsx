@@ -27,6 +27,7 @@ describe('LoginPage', () => {
             .mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ token: 'abc123' }), { status: 200 })));
 
         renderLogin();
+        expect(screen.queryByLabelText(/api base url/i)).not.toBeInTheDocument();
         await userEvent.type(screen.getByLabelText('Email'), 'admin@school.test');
         await userEvent.type(screen.getByLabelText('Password'), 'super-secret-pw');
         await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
@@ -34,8 +35,24 @@ describe('LoginPage', () => {
         await waitFor(() => expect(fetchMock).toHaveBeenCalled());
         const [url, init] = fetchMock.mock.calls[0];
         expect(String(url)).toMatch(/\/auth\/login$/);
+        expect(String(url)).toBe('http://green-valley.localhost:8080/api/v1/auth/login');
         expect(JSON.parse(String(init?.body))).toMatchObject({ email: 'admin@school.test' });
         await waitFor(() => expect(sessionStorage.getItem('sms.session')).toContain('abc123'));
+    });
+
+    it('selects the configured central API for platform administrators', async () => {
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(JSON.stringify({ token: 'platform-token' }), { status: 200 }),
+        );
+
+        renderLogin();
+        await userEvent.selectOptions(screen.getByLabelText('Account type'), 'platform');
+        await userEvent.type(screen.getByLabelText('Email'), 'admin@example.com');
+        await userEvent.type(screen.getByLabelText('Password'), 'password');
+        await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+        await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+        expect(String(fetchMock.mock.calls[0][0])).toBe('http://localhost:8080/api/v1/platform/login');
     });
 
     it('surfaces a server error message without storing a session', async () => {

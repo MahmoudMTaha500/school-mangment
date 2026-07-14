@@ -12,6 +12,7 @@ describe('visibleNavItems', () => {
         const items = visibleNavItems((permission) => granted.has(permission));
         const paths = items.map((i) => i.path);
         expect(paths).toContain('/students');
+        expect(paths).toContain('/parents');
         expect(paths).toContain('/wallet');
         expect(paths).not.toContain('/reports');
         expect(paths).not.toContain('/audit-logs');
@@ -19,6 +20,6 @@ describe('visibleNavItems', () => {
 
     it('shows everything to a full-permission admin', () => {
         const items = visibleNavItems(() => true);
-        expect(items).toHaveLength(6);
+        expect(items).toHaveLength(8);
     });
 });

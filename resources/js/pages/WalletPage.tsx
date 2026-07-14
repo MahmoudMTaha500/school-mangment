@@ -2,7 +2,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
 import { formatDate, formatMinor } from '@/lib/format';
 import type { WalletSnapshot } from '@/types/api';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/PageHeader';
+import { EmptyState, PageHeader } from '@/components/PageHeader';
 import { Icon } from '@/components/Icon';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -10,8 +10,9 @@ import { Loader } from '@/components/ui/Loader';
 import { Alert } from '@/components/ui/Alert';
 
 export function WalletPage() {
-    const { api } = useAuth();
-    const wallet = useAsync<WalletSnapshot>(() => api.get<WalletSnapshot>('/wallet/me'), []);
+    const { api, can } = useAuth();
+    const endpoint = can('wallet.manage') ? '/wallet/overview' : '/wallet/me';
+    const wallet = useAsync<WalletSnapshot>(() => api.get<WalletSnapshot>(endpoint), [api, endpoint]);
     return <div className="inner-page">
         <PageHeader eyebrow="Finance center" title="Wallet" description="Monitor balances and review recent financial activity." icon="wallet" />
         {wallet.loading && <div className="p-16"><Loader size="lg" variant="pulse" className="mx-auto" /></div>}

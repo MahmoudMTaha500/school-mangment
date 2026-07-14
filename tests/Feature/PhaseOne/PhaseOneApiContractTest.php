@@ -20,8 +20,9 @@ final class PhaseOneApiContractTest extends TestCase
             ['GET|HEAD', 'api/v1/staff/teachers/{teacher}'], ['PATCH', 'api/v1/staff/teachers/{teacher}'], ['DELETE', 'api/v1/staff/teachers/{teacher}'],
             ['GET|HEAD', 'api/v1/sis/class-sections/{classSection}'], ['PATCH', 'api/v1/sis/class-sections/{classSection}'], ['DELETE', 'api/v1/sis/class-sections/{classSection}'],
             ['GET|HEAD', 'api/v1/staff/subjects/{subject}'], ['PATCH', 'api/v1/staff/subjects/{subject}'], ['DELETE', 'api/v1/staff/subjects/{subject}'],
-            ['GET|HEAD', 'api/v1/homework/{homework}'], ['GET|HEAD', 'api/v1/homework/{homework}/submissions'], ['GET|HEAD', 'api/v1/submissions/{submission}'],
+            ['GET|HEAD', 'api/v1/homework-options'], ['GET|HEAD', 'api/v1/homework/{homework}'], ['GET|HEAD', 'api/v1/homework/{homework}/submissions'], ['GET|HEAD', 'api/v1/submissions/{submission}'],
             ['GET|HEAD', 'api/v1/wallet/accounts'], ['GET|HEAD', 'api/v1/wallet/accounts/{walletAccount}'], ['PATCH', 'api/v1/wallet/accounts/{walletAccount}'], ['DELETE', 'api/v1/wallet/accounts/{walletAccount}'],
+            ['GET|HEAD', 'api/v1/wallet/overview'],
             ['GET|HEAD', 'api/v1/notification-preferences'], ['GET|HEAD', 'api/v1/notification-preferences/{preference}'], ['DELETE', 'api/v1/notification-preferences/{preference}'],
         ] as $expected) {
             $this->assertTrue($routes->contains($expected), "Missing route {$expected[0]} {$expected[1]}");

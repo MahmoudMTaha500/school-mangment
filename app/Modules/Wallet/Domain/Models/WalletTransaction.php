@@ -15,6 +15,11 @@ final class WalletTransaction extends Model
 
     protected $fillable = ['account_id', 'type', 'amount', 'balance_after', 'reference_type', 'reference_id', 'idempotency_key'];
 
+    protected function casts(): array
+    {
+        return ['amount' => 'integer', 'balance_after' => 'integer', 'created_at' => 'datetime'];
+    }
+
     public function account(): BelongsTo
     {
         return $this->belongsTo(WalletAccount::class);

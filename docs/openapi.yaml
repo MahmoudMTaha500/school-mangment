@@ -127,7 +127,27 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters: [{ name: student_id, in: query, schema: { type: integer } }, { name: class_section_id, in: query, schema: { type: integer } }, { name: subject_id, in: query, schema: { type: integer } }, { $ref: '#/components/parameters/Search' }, { $ref: '#/components/parameters/Status' }, { $ref: '#/components/parameters/PerPage' }]
       responses: { '200': { $ref: '#/components/responses/Page' }, '403': { $ref: '#/components/responses/Forbidden' } }
-    post: { tags: [Homework], summary: Create homework, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
+    post:
+      tags: [Homework]
+      summary: Create homework from an approved teacher/class/subject assignment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [class_section_id, subject_id, title, body, due_at]
+              properties:
+                teacher_id: { type: integer, description: Required when a school administrator creates the assignment }
+                class_section_id: { type: integer }
+                subject_id: { type: integer }
+                title: { type: string }
+                body: { type: string }
+                due_at: { type: string, format: date-time }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '422': { $ref: '#/components/responses/ValidationError' } }
+  /homework-options:
+    get: { tags: [Homework], summary: List valid teacher, class, and subject assignments for homework authoring, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
   /homework/{homework}:
     parameters: [{ $ref: '#/components/parameters/HomeworkId' }]
     get: { tags: [Homework], summary: Homework detail, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
@@ -162,6 +182,8 @@ paths:
     post: { tags: [Wallet], summary: Append idempotent wallet debit, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' }, '422': { $ref: '#/components/responses/ValidationError' } } }
   /wallet/me:
     get: { tags: [Wallet], summary: Current user's wallets and recent transactions, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' } } }
+  /wallet/overview:
+    get: { tags: [Wallet], summary: School-wide active wallets and recent transactions for administrators, security: [{ bearerAuth: [] }], responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } } }
   /wallet/topups:
     post: { tags: [Wallet], summary: Create payment intent, security: [{ bearerAuth: [] }], responses: { '201': { $ref: '#/components/responses/Created' } } }
   /notifications:

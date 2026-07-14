@@ -13,9 +13,45 @@ use App\Modules\SIS\Domain\Models\Student;
 use App\Modules\Staff\Domain\Models\Teacher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 final class HomeworkReadController extends Controller
 {
+    public function options(Request $request): JsonResponse
+    {
+        $assignments = DB::table('teacher_class_subject')
+            ->join('teachers', 'teachers.id', '=', 'teacher_class_subject.teacher_id')
+            ->join('users', 'users.id', '=', 'teachers.user_id')
+            ->join('class_sections', 'class_sections.id', '=', 'teacher_class_subject.class_section_id')
+            ->join('subjects', 'subjects.id', '=', 'teacher_class_subject.subject_id')
+            ->where('teachers.status', 'active')
+            ->where('class_sections.status', 'active')
+            ->where('subjects.status', 'active')
+            ->when($request->user()->hasRole('teacher'), fn ($query) => $query->where('teachers.user_id', $request->user()->id))
+            ->orderBy('users.name')
+            ->orderBy('class_sections.grade')
+            ->orderBy('class_sections.section')
+            ->orderBy('subjects.name')
+            ->get([
+                'teachers.id as teacher_id',
+                'users.name as teacher_name',
+                'class_sections.id as class_section_id',
+                'class_sections.grade',
+                'class_sections.section',
+                'subjects.id as subject_id',
+                'subjects.name as subject_name',
+            ])->map(fn (object $assignment): array => [
+                'teacher_id' => $assignment->teacher_id,
+                'teacher_name' => $assignment->teacher_name,
+                'class_section_id' => $assignment->class_section_id,
+                'class_label' => "{$assignment->grade} - {$assignment->section}",
+                'subject_id' => $assignment->subject_id,
+                'subject_name' => $assignment->subject_name,
+            ])->values();
+
+        return response()->json(['data' => ['assignments' => $assignments]]);
+    }
+
     public function index(Request $request, StudentReadAccess $studentReadAccess): JsonResponse
     {
         $data = $request->validate(['student_id' => ['nullable', 'integer', 'exists:students,id'], 'class_section_id' => ['nullable', 'integer', 'exists:class_sections,id'], 'subject_id' => ['nullable', 'integer', 'exists:subjects,id'], 'status' => ['nullable', 'in:assigned,archived'], 'search' => ['nullable', 'string', 'max:100'], 'due_from' => ['nullable', 'date'], 'due_to' => ['nullable', 'date', 'after_or_equal:due_from'], 'sort' => ['nullable', 'in:due_at,title,created_at'], 'direction' => ['nullable', 'in:asc,desc'], 'per_page' => ['nullable', 'integer', 'min:1', 'max:100']]);

@@ -107,6 +107,7 @@ Route::prefix('api/v1')->middleware([
         Route::middleware('can:homework.create')->delete('/homework/{homework}', [HomeworkController::class, 'archive']);
         Route::middleware('can:homework.create')->put('/homework/{homework}/rubric', [HomeworkController::class, 'replaceRubric']);
         Route::middleware('can:homework.view')->get('/homework', [HomeworkReadController::class, 'index']);
+        Route::middleware('can:homework.view')->get('/homework-options', [HomeworkReadController::class, 'options']);
         Route::middleware('can:homework.view')->get('/homework/{homework}', [HomeworkReadController::class, 'show']);
         Route::middleware('can:homework.grade')->get('/homework/{homework}/submissions', [HomeworkReadController::class, 'submissions']);
         Route::middleware('can:homework.view')->get('/submissions/{submission}', [HomeworkReadController::class, 'showSubmission']);
@@ -127,6 +128,7 @@ Route::prefix('api/v1')->middleware([
             Route::post('/wallet/debit', [WalletController::class, 'debit']);
         });
         Route::middleware('can:wallet.view')->get('/wallet/me', [WalletReadController::class, 'mine']);
+        Route::middleware('can:wallet.manage')->get('/wallet/overview', [WalletReadController::class, 'overview']);
         Route::middleware('can:wallet.view')->get('/wallet/me/transactions.csv', [WalletReadController::class, 'transactionsCsv']);
         Route::middleware('can:wallet.topup')->group(function (): void {
             Route::post('/wallet/topups', [TopupController::class, 'create']);
