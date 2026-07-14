@@ -25,18 +25,6 @@ use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
-/*
-|--------------------------------------------------------------------------
-| Tenant Routes
-|--------------------------------------------------------------------------
-|
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
-|
-| Feel free to customize them however you want. Good luck!
-|
-*/
-
 Route::prefix('api/v1')->middleware([
     'api',
     'throttle:api',
@@ -45,8 +33,6 @@ Route::prefix('api/v1')->middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     Route::post('/auth/login', [TenantAuthController::class, 'login']);
-    // Authenticated by Stripe signature, not a bearer token, so it lives
-    // outside the auth:sanctum group. Tenancy is already resolved by domain.
     Route::post('/webhooks/stripe', [StripeWebhookController::class, 'handle']);
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/auth/me', [TenantAuthController::class, 'me']);

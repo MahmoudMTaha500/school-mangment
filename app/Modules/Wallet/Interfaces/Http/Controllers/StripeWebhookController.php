@@ -12,12 +12,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Stripe delivers events to the tenant domain, so tenancy is already
- * initialized by the domain middleware before this controller runs. The
- * endpoint is authenticated by signature, not by a bearer token, so it sits
- * outside the auth:sanctum group.
- */
 final class StripeWebhookController extends Controller
 {
     public function handle(Request $request, ConfirmTopupIntent $confirmTopupIntent, FailTopupIntent $failTopupIntent): JsonResponse
@@ -33,9 +27,6 @@ final class StripeWebhookController extends Controller
         $event = json_decode($payload, true);
         abort_unless(is_array($event) && isset($event['id'], $event['type']), 400, 'Malformed webhook payload.');
 
-        // Record the event id first; a duplicate delivery is dropped here before
-        // it can reach the ledger. Ledger writes are independently idempotent,
-        // so this is defense in depth, not the sole guard.
         try {
             ProcessedWebhookEvent::query()->create([
                 'provider' => 'stripe',

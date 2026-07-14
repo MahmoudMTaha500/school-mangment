@@ -37,7 +37,6 @@ final class StripeSignatureVerifierTest extends TestCase
 
         $verifier = new StripeSignatureVerifier(self::SECRET, 300);
 
-        // Signature is valid but the timestamp is outside tolerance.
         $this->assertFalse($verifier->isValid($payload, $header, time()));
     }
 

@@ -5,10 +5,7 @@ Laravel 12 school-management backend, built as a database-per-school SaaS. Docke
 ## Contents
 
 - [Architecture guide](docs/ARCHITECTURE.md)
-- [Completion plan](docs/COMPLETION_PLAN.md)
-- [Delivery status](docs/DELIVERY_STATUS.md)
-- [Production operations](docs/OPERATIONS.md)
-- [Postman collection](postman/README.md)
+- [Postman collection](postman/SchoolManagement.postman_collection.json)
 
 ## Prerequisites
 
@@ -195,7 +192,7 @@ Import both files from `postman/`:
 - `SchoolManagement.postman_collection.json`
 - `SchoolManagement.postman_environment.json`
 
-Select the environment and set `tenant_host` to `green-valley.localhost`. The collection automatically adds the `Host` header to tenant requests. See [postman/README.md](postman/README.md).
+Select the environment and set `tenant_host` to `green-valley.localhost`. The collection automatically adds the `Host` header to tenant requests.
 
 ## Troubleshooting
 
@@ -248,4 +245,3 @@ docker compose logs init
 - Use a secret manager for all credentials; never commit `.env`.
 - Back up `school_management` and every `school_<tenant-id>` database separately.
 - Run central migrations, then tenant migrations, then restart queue/scheduler workers on every deploy.
-- See [docs/OPERATIONS.md](docs/OPERATIONS.md) for backup and recovery details.

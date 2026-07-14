@@ -8,11 +8,6 @@ use App\Modules\Notifications\Domain\Models\DeviceToken;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Firebase Cloud Messaging adapter. Degrades to a safe no-op when no server
- * key is configured (non-production) or the user has no registered devices,
- * so it never blocks outbox processing.
- */
 final class FcmPushNotificationChannel implements NotificationChannel
 {
     public function __construct(private readonly HttpFactory $http) {}

@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Centralises brute-force throttling and timing-safe credential checks for the
- * tenant and platform login endpoints.
- */
 final class LoginSecurity
 {
     private const MAX_ATTEMPTS = 5;
@@ -26,10 +22,6 @@ final class LoginSecurity
         return 'login:'.Str::lower($email).'|'.$request->ip();
     }
 
-    /**
-     * Rejects further attempts once the per-email+IP ceiling is hit, so a stolen
-     * password list cannot be sprayed against one account.
-     */
     public function ensureNotThrottled(string $key): void
     {
         if ($this->limiter->tooManyAttempts($key, self::MAX_ATTEMPTS)) {
@@ -51,11 +43,6 @@ final class LoginSecurity
         $this->limiter->clear($key);
     }
 
-    /**
-     * Constant-work password verification: a hash check runs even when the user
-     * is unknown (against a throwaway hash), so response timing does not reveal
-     * whether an email is registered.
-     */
     public function passwordMatches(?User $user, string $password): bool
     {
         $hash = $user?->getAuthPassword() ?: $this->decoyHash();

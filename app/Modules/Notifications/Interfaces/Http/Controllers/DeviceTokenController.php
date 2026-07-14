@@ -16,8 +16,6 @@ final class DeviceTokenController extends Controller
             'platform' => ['nullable', 'string', 'in:ios,android,web'],
         ]);
 
-        // Re-registering the same token re-homes it to the current user (device
-        // handed over) and refreshes its freshness stamp.
         $token = DeviceToken::query()->updateOrCreate(
             ['token' => $data['token']],
             ['user_id' => $request->user()->id, 'platform' => $data['platform'] ?? null, 'last_used_at' => now()],

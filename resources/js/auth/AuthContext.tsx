@@ -43,8 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         [session],
     );
 
-    // Whenever a session exists but the profile is unknown, resolve it so the
-    // UI can gate on real roles/permissions rather than a client-side guess.
     useEffect(() => {
         let cancelled = false;
         if (!session) {
@@ -88,7 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await api.post('/auth/logout');
         } catch {
-            // Best-effort: a failed server-side revoke must not trap the user.
         }
         sessionStorage.removeItem(STORAGE_KEY);
         setSession(null);

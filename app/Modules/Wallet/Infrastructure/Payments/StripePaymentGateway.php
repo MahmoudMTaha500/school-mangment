@@ -7,11 +7,6 @@ use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use RuntimeException;
 
-/**
- * Stripe Checkout adapter implemented over the REST API so the project carries
- * no SDK dependency. The stored gateway_payment_id is the Checkout Session id;
- * payment status is resolved from that session.
- */
 final class StripePaymentGateway implements PaymentGateway
 {
     /** @param array{secret:string,base_url:string,success_url:string,cancel_url:string} $config */
@@ -20,8 +15,6 @@ final class StripePaymentGateway implements PaymentGateway
     public function createCheckout(int $amount, string $currency, string $reference): array
     {
         $response = $this->client()
-            // Ties Stripe's idempotency to our own key so a retried create call
-            // never opens a second session for the same top-up.
             ->withHeaders(['Idempotency-Key' => 'checkout:'.$reference])
             ->asForm()
             ->post($this->url('/v1/checkout/sessions'), [

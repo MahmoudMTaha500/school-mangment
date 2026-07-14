@@ -5,8 +5,6 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
-// The Laravel plugin manifests assets for PHP; it is skipped under Vitest so
-// unit tests do not require the Laravel dev server or a hot file.
 const isTest = process.env.VITEST === 'true';
 
 export default defineConfig({

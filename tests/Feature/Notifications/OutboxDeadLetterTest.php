@@ -64,7 +64,6 @@ final class OutboxDeadLetterTest extends TestCase
 
         $processOutbox = new ProcessOutbox($this->failingDispatcher());
 
-        // First run: delivery throws, message is retried with backoff, not dead.
         $processOutbox->handle();
         $message = OutboxMessage::query()->findOrFail($messageId);
         $this->assertSame(1, $message->attempts);
@@ -73,7 +72,6 @@ final class OutboxDeadLetterTest extends TestCase
         $this->assertTrue($message->available_at->isFuture());
         $this->assertNotNull($message->last_error);
 
-        // Drive it to the attempt ceiling; it must dead-letter, never deliver.
         for ($i = 0; $i < 5; $i++) {
             OutboxMessage::query()->whereKey($messageId)->update(['available_at' => now()->subMinute()]);
             $processOutbox->handle();

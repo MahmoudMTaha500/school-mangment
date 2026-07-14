@@ -14,8 +14,6 @@ return new class extends Migration
             $table->string('event_id');
             $table->string('event_type');
             $table->timestamp('processed_at')->useCurrent();
-            // A replayed webhook carries the same provider event id; the unique
-            // index makes double-processing a hard database error, not a race.
             $table->unique(['provider', 'event_id']);
         });
     }

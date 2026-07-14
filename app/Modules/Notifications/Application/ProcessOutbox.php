@@ -10,7 +10,6 @@ use Throwable;
 
 final class ProcessOutbox
 {
-    /** After this many attempts a message is dead-lettered instead of retried. */
     private const MAX_ATTEMPTS = 5;
 
     public function __construct(private readonly NotificationDispatcher $dispatcher) {}
@@ -35,12 +34,8 @@ final class ProcessOutbox
         return $processed;
     }
 
-    /** @return bool whether the message was delivered (false = retried or dead-lettered) */
     private function process(int $messageId): bool
     {
-        // Claim + deliver inside one transaction so a locked message is not
-        // picked up by a concurrent worker. Delivery failures are handled
-        // outside the transaction so the attempt count actually persists.
         try {
             return DB::transaction(function () use ($messageId): bool {
                 $message = OutboxMessage::query()->lockForUpdate()->find($messageId);
@@ -121,7 +116,6 @@ final class ProcessOutbox
             return;
         }
 
-        // Exponential backoff: 2^attempts minutes, capped, before the next try.
         $delayMinutes = min(2 ** $attempts, 60);
         $message->update([
             'attempts' => $attempts,

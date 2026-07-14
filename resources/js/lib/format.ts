@@ -1,4 +1,3 @@
-/** Formats an integer minor-unit amount (e.g. cents) as a currency string. */
 export function formatMinor(amountMinor: number, currency: string): string {
     try {
         return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountMinor / 100);

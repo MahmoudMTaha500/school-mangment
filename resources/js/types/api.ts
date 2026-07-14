@@ -1,7 +1,3 @@
-// Types mirror the Laravel API Resources in app/Modules/**/Interfaces/Http/Resources.
-// Kept hand-authored (rather than generated) so they track the `data` envelopes
-// the API actually returns and stay readable in review.
-
 export interface Me {
     id: number;
     name: string;

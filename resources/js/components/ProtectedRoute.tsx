@@ -2,11 +2,6 @@ import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthContext';
 
-/**
- * Guards a route: unauthenticated users go to /login, and users lacking the
- * required permission get a clear 'not authorized' panel instead of a blank or
- * error-prone page.
- */
 export function ProtectedRoute({ permission, children }: { permission?: string; children: ReactNode }) {
     const { token, loading, can } = useAuth();
 

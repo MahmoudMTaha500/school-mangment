@@ -2,12 +2,6 @@
 
 namespace App\Support;
 
-/**
- * Guards CSV exports against spreadsheet formula injection: a cell whose text
- * begins with a formula trigger (= + - @, tab, CR) is executed by Excel/Sheets
- * on open. Prefixing such values with a single quote neutralises them while
- * leaving the displayed text intact. Numbers pass through untouched.
- */
 final class Csv
 {
     private const TRIGGERS = ['=', '+', '-', '@', "\t", "\r"];

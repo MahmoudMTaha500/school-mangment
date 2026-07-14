@@ -93,7 +93,6 @@ final class StripeWebhookTest extends TestCase
         $response = $this->handle($this->event('evt_1', 'checkout.session.completed', 'sandbox_sess_1'));
         $this->assertSame('ok', $response['status']);
 
-        // Replayed delivery of the same event id is dropped.
         $replay = $this->handle($this->event('evt_1', 'checkout.session.completed', 'sandbox_sess_1'));
         $this->assertSame('duplicate', $replay['status']);
 

@@ -14,14 +14,9 @@ export class ApiError extends Error {
 export interface ApiClientOptions {
     baseUrl: string;
     token?: string | null;
-    /** Injectable for tests; defaults to the global fetch. */
     fetchFn?: typeof fetch;
 }
 
-/**
- * Thin typed wrapper over fetch that understands the API's `{ data: ... }`
- * envelope, Sanctum bearer auth, and Laravel's 422 validation error shape.
- */
 export class ApiClient {
     private readonly baseUrl: string;
     private readonly token?: string | null;
@@ -42,13 +37,11 @@ export class ApiClient {
         return body.token;
     }
 
-    /** Unwraps a single-object `{ data: T }` response. */
     async get<T>(path: string): Promise<T> {
         const body = await this.request<{ data: T }>('GET', path);
         return body.data;
     }
 
-    /** Unwraps a paginated resource collection into items + meta. */
     async getPaginated<T>(path: string): Promise<Paginated<T>> {
         const body = await this.request<PaginatedResponse<T>>('GET', path);
         return normalizePaginated<T>(body);
@@ -106,9 +99,6 @@ interface PaginatedResponse<T> {
     meta?: PaginationMeta;
 }
 
-// Laravel resource collections return `{ data: [...], meta }`. We also tolerate
-// a nested `{ data: { data: [...] } }` shape defensively so a server-side change
-// in envelope depth does not blank the UI.
 export function normalizePaginated<T>(body: PaginatedResponse<T>): Paginated<T> {
     if (Array.isArray(body.data)) {
         return { items: body.data, meta: body.meta ?? null };

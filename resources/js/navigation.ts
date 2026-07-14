@@ -1,10 +1,6 @@
-// Single source of truth for navigation + route gating. Each item names the
-// permission the tenant API already enforces, so the UI mirrors the backend
-// rather than inventing a parallel authorization model.
 export interface NavItem {
     path: string;
     label: string;
-    /** Permission required to see/enter this route; null = any authenticated user. */
     permission: string | null;
 }
 

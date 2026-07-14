@@ -24,7 +24,7 @@ export function Alert({ className = '', variant = 'default', icon, title, childr
     };
 
     let defaultIcon: IconName = 'sparkles';
-    if (variant === 'success') defaultIcon = 'shield'; // Using existing icons based on typical sets, might need adjusting
+    if (variant === 'success') defaultIcon = 'shield';
     if (variant === 'error') defaultIcon = 'notifications';
     if (variant === 'warning') defaultIcon = 'notifications';
 

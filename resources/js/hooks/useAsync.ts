@@ -8,7 +8,6 @@ interface AsyncState<T> {
     reload: () => void;
 }
 
-/** Runs an async loader on mount and exposes {data,error,loading,reload}. */
 export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []): AsyncState<T> {
     const [data, setData] = useState<T | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -36,7 +35,6 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []): Asy
         return () => {
             cancelled = true;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...deps, nonce]);
 
     return { data, error, loading, reload };

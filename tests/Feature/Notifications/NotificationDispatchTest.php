@@ -18,8 +18,6 @@ final class NotificationDispatchTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // `users` comes from the central migrations that RefreshDatabase runs;
-        // the notification tables are tenant migrations, so build them inline.
         Schema::create('notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('type');
@@ -41,7 +39,6 @@ final class NotificationDispatchTest extends TestCase
     {
         $user = User::query()->create(['name' => 'Parent', 'email' => 'parent@example.test', 'password' => 'secret-password']);
 
-        // Resolved from the container: exercises the tagged-channel wiring.
         app(NotificationDispatcher::class)->dispatch($user->id, 'WalletCredited', ['message' => 'Wallet credited.']);
 
         $this->assertDatabaseCount('notifications', 1);
@@ -57,7 +54,6 @@ final class NotificationDispatchTest extends TestCase
 
         app(NotificationDispatcher::class)->dispatch($user->id, 'WalletCredited', ['message' => 'Wallet credited.']);
 
-        // Email channel runs (array mailer), but in-app was not selected.
         $this->assertDatabaseCount('notifications', 0);
     }
 }

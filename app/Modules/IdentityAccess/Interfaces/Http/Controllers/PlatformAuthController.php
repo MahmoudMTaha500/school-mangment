@@ -20,8 +20,6 @@ final class PlatformAuthController extends Controller
 
         $user = User::query()->where('email', $credentials['email'])->first();
 
-        // Password verification runs in constant work regardless of whether the
-        // account exists or is a platform admin, to avoid user enumeration.
         $passwordMatches = $loginSecurity->passwordMatches($user, $credentials['password']);
 
         if (! $user || ! $user->is_platform_admin || ! $passwordMatches) {

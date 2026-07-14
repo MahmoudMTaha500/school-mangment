@@ -21,13 +21,7 @@ class NotificationDispatcher
         }
     }
 
-    /**
-     * Fan a single event out to every channel the user has enabled. Channels
-     * with no preference row default to in-app only. One channel throwing must
-     * not stop the others or fail the whole outbox message.
-     *
-     * @param  array<string, mixed>  $data
-     */
+    /** @param array<string, mixed> $data */
     public function dispatch(int $userId, string $eventType, array $data): void
     {
         $user = User::query()->find($userId);

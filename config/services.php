@@ -2,18 +2,6 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Third Party Services
-    |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
-    */
-
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
@@ -35,17 +23,6 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Wallet payment gateway
-    |--------------------------------------------------------------------------
-    |
-    | `driver` selects the PaymentGateway implementation bound in
-    | AppServiceProvider: `sandbox` for local/testing, `stripe` for production.
-    | Credentials live only in deployment secrets, never in a tenant database.
-    |
-    */
-
     'payments' => [
         'driver' => env('PAYMENTS_DRIVER', 'sandbox'),
     ],
@@ -56,19 +33,8 @@ return [
         'base_url' => env('STRIPE_BASE_URL', 'https://api.stripe.com'),
         'success_url' => env('STRIPE_SUCCESS_URL', 'https://app.invalid/wallet/topups/success'),
         'cancel_url' => env('STRIPE_CANCEL_URL', 'https://app.invalid/wallet/topups/cancel'),
-        // Reject webhook signatures whose timestamp is older than this (seconds) to stop replay.
         'webhook_tolerance' => (int) env('STRIPE_WEBHOOK_TOLERANCE', 300),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Push notifications (Firebase Cloud Messaging)
-    |--------------------------------------------------------------------------
-    |
-    | When no server key is configured the push channel becomes a safe no-op,
-    | so non-production environments never attempt outbound delivery.
-    |
-    */
 
     'fcm' => [
         'server_key' => env('FCM_SERVER_KEY'),

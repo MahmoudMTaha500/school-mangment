@@ -9,8 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('outbox_messages', function (Blueprint $table): void {
-            // Set once a message exhausts its retries; such messages are parked
-            // for inspection instead of being retried or silently dropped.
             $table->timestamp('failed_at')->nullable()->after('processed_at');
             $table->text('last_error')->nullable()->after('failed_at');
             $table->index(['processed_at', 'failed_at', 'available_at']);

@@ -27,8 +27,6 @@ final class LoginSecurityTest extends TestCase
 
     public function test_unknown_user_never_matches_but_still_runs_a_hash_check(): void
     {
-        // A null user returns false (no enumeration signal); the decoy hash keeps
-        // this path doing the same bcrypt work as the found-user path.
         $this->assertFalse($this->security()->passwordMatches(null, 'anything'));
     }
 
@@ -61,7 +59,6 @@ final class LoginSecurityTest extends TestCase
         }
         $security->clear($key);
 
-        // Back to a clean slate — must not throw.
         $security->ensureNotThrottled($key);
         $this->assertTrue(true);
     }

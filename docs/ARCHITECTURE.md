@@ -123,5 +123,3 @@ The OpenAPI contract is at `docs/openapi.yaml`, and the Postman assets are under
 ## Runtime architecture
 
 Docker Compose runs Nginx, PHP-FPM/Laravel, MySQL 8.4, Redis, a queue worker, scheduler worker, and Mailpit. Nginx is the only public application port by default. MySQL is exposed on `3307` only for development tools.
-
-For deployment and recovery conventions, see [OPERATIONS.md](OPERATIONS.md).

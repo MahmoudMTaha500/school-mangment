@@ -13,7 +13,7 @@ final class DatabasePerSchoolTenancyTest extends TestCase
 
     public function test_school_tenant_is_stored_centrally_with_its_domain(): void
     {
-        Event::fake(); // Database provisioning is exercised against MySQL in Docker.
+        Event::fake();
 
         $school = SchoolTenant::create(['id' => 'green-valley', 'name' => 'Green Valley School']);
         $school->domains()->create(['domain' => 'green-valley.localhost']);

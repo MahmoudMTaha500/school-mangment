@@ -6,11 +6,6 @@ use App\Models\User;
 use App\Modules\Notifications\Application\Contracts\NotificationChannel;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Optional SMS channel. Ships with a `log` driver so the delivery path is
- * exercised end to end without a paid provider; a real provider (Twilio,
- * Vonage, a local aggregator) slots in behind the same interface.
- */
 final class SmsNotificationChannel implements NotificationChannel
 {
     public function key(): string
@@ -28,6 +23,5 @@ final class SmsNotificationChannel implements NotificationChannel
             return;
         }
 
-        // Real providers plug in here; unknown drivers are a no-op by design.
     }
 }
